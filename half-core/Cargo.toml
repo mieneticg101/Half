@@ -1,0 +1,47 @@
+[package]
+name = "half-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Half - A lightweight, secure, and high-performance Rust web framework"
+keywords = ["web", "framework", "async", "http", "security"]
+categories = ["web-programming::http-server", "asynchronous"]
+
+[dependencies]
+# Async runtime
+tokio = { workspace = true }
+hyper = { workspace = true }
+hyper-util = { workspace = true }
+http-body-util = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Security
+sha2 = { workspace = true }
+hmac = { workspace = true }
+base64 = { workspace = true }
+htmlescape = { workspace = true }
+rand = { workspace = true }
+
+# Utilities
+bytes = { workspace = true }
+futures = { workspace = true }
+pin-project = { workspace = true }
+thiserror = { workspace = true }
+percent-encoding = { workspace = true }
+
+# Macros
+half-macros = { path = "../half-macros" }
+
+[dev-dependencies]
+tokio-test = "0.4"
+
+[features]
+default = ["security"]
+security = []
+full = ["security"]

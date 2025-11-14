@@ -1,0 +1,22 @@
+[package]
+name = "half-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "CLI tool for Half framework"
+keywords = ["web", "framework", "cli", "tool"]
+categories = ["command-line-utilities", "development-tools"]
+
+[[bin]]
+name = "half"
+path = "src/main.rs"
+
+[dependencies]
+clap = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
