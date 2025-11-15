@@ -2,9 +2,16 @@
 //!
 //! Provides a flexible middleware system for request/response processing.
 
+pub mod compression;
+pub mod ratelimit;
+
 use crate::{Request, Response, error::Result};
 use std::future::Future;
 use std::pin::Pin;
+
+// Re-export middleware types
+pub use compression::{Compression, CompressionAlgorithm, CompressionLevel};
+pub use ratelimit::{RateLimiter, RateLimitConfig};
 
 /// Next middleware in the chain
 pub type Next = Box<dyn FnOnce(Request) -> Pin<Box<dyn Future<Output = Result<Response>> + Send>> + Send>;
@@ -41,18 +48,19 @@ impl Middleware for Logger {
         Box::pin(async move {
             let method = req.method().clone();
             let path = req.path().to_string();
+            let start = std::time::Instant::now();
 
-            println!("[{}] {}", method, path);
+            println!("→ [{}] {}", method, path);
 
             let result = next(req).await;
 
+            let duration = start.elapsed();
             match &result {
                 Ok(_response) => {
-                    // Note: We can't access status from Response directly in current implementation
-                    println!("[{}] {} - OK", method, path);
+                    println!("← [{}] {} - OK ({:?})", method, path, duration);
                 }
                 Err(error) => {
-                    println!("[{}] {} - Error: {}", method, path, error);
+                    println!("← [{}] {} - Error: {} ({:?})", method, path, error, duration);
                 }
             }
 
@@ -68,6 +76,8 @@ pub struct Cors {
     allow_origin: String,
     allow_methods: Vec<String>,
     allow_headers: Vec<String>,
+    allow_credentials: bool,
+    max_age: Option<u32>,
 }
 
 impl Cors {
@@ -87,6 +97,8 @@ impl Cors {
                 "Content-Type".to_string(),
                 "Authorization".to_string(),
             ],
+            allow_credentials: false,
+            max_age: Some(3600),
         }
     }
 
@@ -107,6 +119,18 @@ impl Cors {
         self.allow_headers = headers;
         self
     }
+
+    /// Enable credentials
+    pub fn allow_credentials(mut self, allow: bool) -> Self {
+        self.allow_credentials = allow;
+        self
+    }
+
+    /// Set max age for preflight requests
+    pub fn max_age(mut self, seconds: u32) -> Self {
+        self.max_age = Some(seconds);
+        self
+    }
 }
 
 impl Default for Cors {
@@ -121,16 +145,38 @@ impl Middleware for Cors {
         req: Request,
         next: Next,
     ) -> Pin<Box<dyn Future<Output = Result<Response>> + Send + '_>> {
-        let _allow_origin = self.allow_origin.clone();
-        let _allow_methods = self.allow_methods.join(", ");
-        let _allow_headers = self.allow_headers.join(", ");
+        let allow_origin = self.allow_origin.clone();
+        let allow_methods = self.allow_methods.join(", ");
+        let allow_headers = self.allow_headers.join(", ");
+        let allow_credentials = self.allow_credentials;
+        let max_age = self.max_age;
 
         Box::pin(async move {
-            let response = next(req).await?;
+            // Handle preflight OPTIONS request
+            if req.method().as_str() == "OPTIONS" {
+                let mut response = Response::text("");
+                response = response.header_str("access-control-allow-origin", &allow_origin);
+                response = response.header_str("access-control-allow-methods", &allow_methods);
+                response = response.header_str("access-control-allow-headers", &allow_headers);
 
-            // Add CORS headers
-            // Note: In the current Response implementation, we need to modify this
-            // For now, this is a placeholder showing the intended behavior
+                if allow_credentials {
+                    response = response.header_str("access-control-allow-credentials", "true");
+                }
+
+                if let Some(age) = max_age {
+                    response = response.header_str("access-control-max-age", &age.to_string());
+                }
+
+                return Ok(response);
+            }
+
+            // Process normal request
+            let mut response = next(req).await?;
+
+            response = response.header_str("access-control-allow-origin", &allow_origin);
+            if allow_credentials {
+                response = response.header_str("access-control-allow-credentials", "true");
+            }
 
             Ok(response)
         })
@@ -145,9 +191,13 @@ mod tests {
     fn test_cors_builder() {
         let cors = Cors::new()
             .allow_origin("https://example.com")
-            .allow_methods(vec!["GET".to_string(), "POST".to_string()]);
+            .allow_methods(vec!["GET".to_string(), "POST".to_string()])
+            .allow_credentials(true)
+            .max_age(7200);
 
         assert_eq!(cors.allow_origin, "https://example.com");
         assert_eq!(cors.allow_methods.len(), 2);
+        assert!(cors.allow_credentials);
+        assert_eq!(cors.max_age, Some(7200));
     }
 }

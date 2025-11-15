@@ -42,6 +42,14 @@ thiserror = { workspace = true }
 percent-encoding = { workspace = true }
 chrono = { workspace = true }
 
+# Compression
+async-compression = { workspace = true }
+flate2 = { workspace = true }
+
+# Rate Limiting
+governor = { workspace = true }
+parking_lot = { workspace = true }
+
 # Macros
 half-macros = { path = "../half-macros" }
 

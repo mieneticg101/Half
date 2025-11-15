@@ -14,6 +14,7 @@ use serde::Serialize;
 /// HTTP Response builder
 ///
 /// Provides a fluent API for building responses with automatic security headers.
+#[derive(Clone)]
 pub struct Response {
     pub(crate) status: StatusCode,
     pub(crate) headers: HeaderMap,
@@ -217,6 +218,26 @@ impl Response {
                 Self::text(error_message).status(status)
             }
         }
+    }
+
+    /// Get a reference to the response body
+    pub fn get_body(&self) -> &Bytes {
+        &self.body
+    }
+
+    /// Get a reference to the response headers
+    pub fn get_headers(&self) -> &HeaderMap {
+        &self.headers
+    }
+
+    /// Get a mutable reference to the response headers
+    pub fn get_headers_mut(&mut self) -> &mut HeaderMap {
+        &mut self.headers
+    }
+
+    /// Get the response status code
+    pub fn get_status(&self) -> StatusCode {
+        self.status
     }
 
     /// Convert to Hyper response

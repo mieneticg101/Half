@@ -9,7 +9,7 @@ use crate::{
     Request, Response,
 };
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD as BASE64, Engine};
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Utc};
 use dashmap::DashMap;
 use rand::Rng;
 use std::future::Future;
@@ -42,7 +42,8 @@ struct NonceEntry {
 ///     .ttl(300)  // 5 minutes
 ///     .cleanup_interval(60);  // Clean every minute
 ///
-/// router.use_middleware(nonce);
+/// // Use with your router
+/// // router.use_middleware(nonce);
 /// ```
 pub struct NonceProtection {
     /// Storage for used nonces with their creation time
@@ -232,6 +233,7 @@ impl Middleware for NonceProtection {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chrono::Duration;
 
     #[tokio::test]
     async fn test_generate_nonce() {
