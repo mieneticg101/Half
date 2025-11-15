@@ -156,7 +156,7 @@ impl ValidationRules {
     pub fn required(mut self, field: impl Into<String>) -> Self {
         self.rules
             .entry(field.into())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(Rule::Required);
         self
     }
@@ -165,7 +165,7 @@ impl ValidationRules {
     pub fn length(mut self, field: impl Into<String>, min: usize, max: usize) -> Self {
         self.rules
             .entry(field.into())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(Rule::Length { min, max });
         self
     }
@@ -174,7 +174,7 @@ impl ValidationRules {
     pub fn email(mut self, field: impl Into<String>) -> Self {
         self.rules
             .entry(field.into())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(Rule::Email);
         self
     }

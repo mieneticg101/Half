@@ -68,7 +68,7 @@ impl Request {
         // Parse query parameters with limit
         let query = uri
             .query()
-            .map(|q| Self::parse_query(q))
+            .map(Self::parse_query)
             .unwrap_or_default();
 
         // Validate query parameter count
@@ -160,7 +160,7 @@ impl Request {
                 }
 
                 serde_json::from_slice(bytes)
-                    .map_err(|e| Error::Json(e))
+                    .map_err(Error::Json)
             }
             None => Err(Error::BadRequest("Empty body".into())),
         }

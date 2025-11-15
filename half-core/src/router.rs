@@ -141,7 +141,7 @@ impl Router {
                 req.set_params(params);
 
                 // Apply middlewares and handle request
-                match self.apply_middlewares_and_handle(&route, req).await {
+                match self.apply_middlewares_and_handle(route, req).await {
                     Ok(response) => response,
                     Err(error) => Response::from_error(&error),
                 }
@@ -180,7 +180,7 @@ impl Router {
         // Fall back to pattern matching for parameterized routes
         for route in &self.routes {
             // Check method match
-            if &route.method != method {
+            if route.method != *method {
                 continue;
             }
 
@@ -213,9 +213,8 @@ impl Router {
         loop {
             match (pattern_parts.next(), path_parts.next()) {
                 (Some(pattern_part), Some(path_part)) => {
-                    if pattern_part.starts_with(':') {
+                    if let Some(param_name) = pattern_part.strip_prefix(':') {
                         // This is a parameter
-                        let param_name = &pattern_part[1..]; // Remove the ':'
                         params.insert(param_name.to_string(), path_part.to_string());
                     } else if pattern_part != path_part {
                         // Static parts must match exactly

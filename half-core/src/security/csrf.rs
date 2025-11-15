@@ -71,10 +71,11 @@ impl CsrfToken {
     pub fn as_str(&self) -> &str {
         &self.token
     }
+}
 
-    /// Get the token as a String
-    pub fn to_string(&self) -> String {
-        self.token.clone()
+impl std::fmt::Display for CsrfToken {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.token)
     }
 }
 
