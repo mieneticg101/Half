@@ -348,7 +348,6 @@ mod tests {
             .build();
 
         // If we got here without panicking, the test passes
-        assert!(true);
     }
 
     #[test]
@@ -356,6 +355,5 @@ mod tests {
         let _cookie = CookieBuilder::new("test", "value").build();
 
         // If we got here without panicking, the test passes
-        assert!(true);
     }
 }

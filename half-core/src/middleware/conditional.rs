@@ -99,6 +99,5 @@ mod tests {
         let logger = Logger;
         let _conditional = Conditional::when(logger, |_req| true);
         // If we got here without panicking, the test passes
-        assert!(true);
     }
 }

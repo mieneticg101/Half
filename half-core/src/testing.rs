@@ -321,6 +321,6 @@ mod tests {
             .header("authorization", "Bearer token")
             .body(b"test body".to_vec());
 
-        assert!(true);
+        // If we got here without panicking, the test passes
     }
 }

@@ -164,13 +164,11 @@ mod tests {
         });
 
         // Basic smoke test - just ensure it doesn't panic
-        assert!(true);
     }
 
     #[test]
     fn test_response_creation() {
         let _response = Response::text("Hello");
         // Basic smoke test - just ensure it doesn't panic
-        assert!(true);
     }
 }

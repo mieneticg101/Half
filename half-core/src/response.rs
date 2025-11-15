@@ -309,6 +309,88 @@ impl Response {
         Self::text("Forbidden").status(StatusCode::FORBIDDEN)
     }
 
+    /// Create an inline file attachment response (displays in browser)
+    ///
+    /// Unlike `download()`, this sets Content-Disposition to "inline" which
+    /// causes the browser to display the file (e.g., images, PDFs) rather than
+    /// downloading it.
+    ///
+    /// # Example
+    /// ```ignore
+    /// Response::attachment("image.png", image_bytes, "image/png", true)
+    /// ```
+    pub fn attachment(filename: &str, content: impl Into<Bytes>, mime_type: &str, inline: bool) -> Self {
+        let disposition = if inline {
+            format!("inline; filename=\"{}\"", filename)
+        } else {
+            format!("attachment; filename=\"{}\"", filename)
+        };
+
+        Self::new()
+            .content_type(mime_type)
+            .header_str("content-disposition", &disposition)
+            .body(content)
+    }
+
+    /// Create a 202 Accepted response
+    ///
+    /// Indicates that the request has been accepted for processing, but the
+    /// processing has not been completed.
+    pub fn accepted() -> Self {
+        Self::new()
+            .status(StatusCode::ACCEPTED)
+            .body(b"Accepted".to_vec())
+    }
+
+    /// Create a 206 Partial Content response
+    ///
+    /// Used for range requests when only a portion of the resource is being sent.
+    ///
+    /// # Arguments
+    /// * `content` - The partial content bytes
+    /// * `range` - The content range (e.g., "bytes 0-1023/2048")
+    pub fn partial_content(content: impl Into<Bytes>, range: &str) -> Self {
+        Self::new()
+            .status(StatusCode::PARTIAL_CONTENT)
+            .header_str("content-range", range)
+            .body(content)
+    }
+
+    /// Create a 409 Conflict response
+    ///
+    /// Indicates that the request could not be completed due to a conflict
+    /// with the current state of the resource.
+    pub fn conflict(message: impl Into<String>) -> Self {
+        Self::text(message)
+            .status(StatusCode::CONFLICT)
+    }
+
+    /// Create a 422 Unprocessable Entity response
+    ///
+    /// Indicates that the server understands the content type of the request entity,
+    /// but was unable to process the contained instructions (e.g., validation errors).
+    pub fn unprocessable(message: impl Into<String>) -> Self {
+        Self::text(message)
+            .status(StatusCode::UNPROCESSABLE_ENTITY)
+    }
+
+    /// Create a 429 Too Many Requests response
+    ///
+    /// Indicates that the user has sent too many requests in a given amount of time.
+    ///
+    /// # Arguments
+    /// * `retry_after` - Optional number of seconds to wait before retrying
+    pub fn too_many_requests(retry_after: Option<u32>) -> Self {
+        let mut response = Self::text("Too Many Requests")
+            .status(StatusCode::TOO_MANY_REQUESTS);
+
+        if let Some(seconds) = retry_after {
+            response = response.header_str("retry-after", &seconds.to_string());
+        }
+
+        response
+    }
+
     /// Get a reference to the response body
     pub fn get_body(&self) -> &Bytes {
         &self.body
@@ -512,5 +594,66 @@ mod tests {
 
         let body_str = String::from_utf8(response.body.to_vec()).unwrap();
         assert!(body_str.contains("Hello"));
+    }
+
+    #[test]
+    fn test_attachment_inline() {
+        let response = Response::attachment("test.pdf", b"PDF content".to_vec(), "application/pdf", true);
+
+        assert_eq!(response.status, StatusCode::OK);
+        let disposition = response.headers.get("content-disposition").unwrap();
+        assert!(disposition.to_str().unwrap().contains("inline"));
+        assert!(disposition.to_str().unwrap().contains("test.pdf"));
+    }
+
+    #[test]
+    fn test_attachment_download() {
+        let response = Response::attachment("test.pdf", b"PDF content".to_vec(), "application/pdf", false);
+
+        let disposition = response.headers.get("content-disposition").unwrap();
+        assert!(disposition.to_str().unwrap().contains("attachment"));
+    }
+
+    #[test]
+    fn test_accepted() {
+        let response = Response::accepted();
+        assert_eq!(response.status, StatusCode::ACCEPTED);
+    }
+
+    #[test]
+    fn test_partial_content() {
+        let response = Response::partial_content(b"partial".to_vec(), "bytes 0-6/100");
+
+        assert_eq!(response.status, StatusCode::PARTIAL_CONTENT);
+        let range = response.headers.get("content-range").unwrap();
+        assert_eq!(range.to_str().unwrap(), "bytes 0-6/100");
+    }
+
+    #[test]
+    fn test_conflict() {
+        let response = Response::conflict("Resource conflict");
+        assert_eq!(response.status, StatusCode::CONFLICT);
+    }
+
+    #[test]
+    fn test_unprocessable() {
+        let response = Response::unprocessable("Validation failed");
+        assert_eq!(response.status, StatusCode::UNPROCESSABLE_ENTITY);
+    }
+
+    #[test]
+    fn test_too_many_requests() {
+        let response = Response::too_many_requests(Some(60));
+
+        assert_eq!(response.status, StatusCode::TOO_MANY_REQUESTS);
+        let retry_after = response.headers.get("retry-after").unwrap();
+        assert_eq!(retry_after.to_str().unwrap(), "60");
+    }
+
+    #[test]
+    fn test_too_many_requests_no_retry() {
+        let response = Response::too_many_requests(None);
+        assert_eq!(response.status, StatusCode::TOO_MANY_REQUESTS);
+        assert!(response.headers.get("retry-after").is_none());
     }
 }

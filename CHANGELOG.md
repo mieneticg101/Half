@@ -5,6 +5,96 @@ All notable changes to the Half framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2025-11-15
+
+### Added - Phase 8: Advanced Routing & Enhanced Request/Response
+
+#### Named Routes & URL Generation
+- **Named Routes**: Assign names to routes for URL generation
+  - `router.get("/users/:id", handler).name("user.show")`
+  - Fluent API for route naming
+  - Unique route names per router
+- **URL Generation**: Generate URLs from route names with parameters
+  - `router.url("user.show", &[("id", "123")])` → `/users/123`
+  - Automatic parameter substitution
+  - Missing parameter validation
+  - Support for multiple route parameters
+- **Route Introspection**: Query routes by name
+  - Named route lookup
+  - Route metadata access
+
+#### Route Middleware
+- **Per-Route Middleware**: Apply middleware to specific routes
+  - `router.get("/admin", handler).middleware(AuthMiddleware)`
+  - Chain multiple route-specific middlewares
+  - Combine with global middlewares
+- **Middleware Priority**: Global middlewares run first, then route-specific
+- **Fluent Chaining**: Combine `name()` and `middleware()` methods
+  - Example: `router.get("/api/users", handler).name("api.users").middleware(Logger)`
+
+#### Enhanced Response Helpers
+- **File Attachments**: Control inline vs download behavior
+  - `Response::attachment(filename, content, mime_type, inline)`
+  - Inline display for browsers (images, PDFs)
+  - Download mode for files
+  - Proper Content-Disposition headers
+- **Status Code Helpers**:
+  - `Response::accepted()` - 202 Accepted
+  - `Response::partial_content(content, range)` - 206 Partial Content
+  - `Response::conflict(message)` - 409 Conflict
+  - `Response::unprocessable(message)` - 422 Unprocessable Entity
+  - `Response::too_many_requests(retry_after)` - 429 Too Many Requests
+- **Range Request Support**: Partial content delivery with content-range headers
+- **Retry-After Header**: Automatic retry-after header for rate limiting
+
+#### Request Validation Extensions
+- **Additional Validation Rules**:
+  - `numeric()` - Validate numeric-only fields
+  - `alphanumeric()` - Validate alphanumeric fields
+  - `min(value)` - Minimum numeric value validation
+  - `max(value)` - Maximum numeric value validation
+  - `custom(validator, message)` - Custom validation logic
+- **Custom Validators**: Add your own validation logic
+  - Function-based validators
+  - Custom error messages
+  - Chainable with other rules
+- **Enhanced Error Messages**: Field-specific validation errors
+  - Include field names in error messages
+  - Multiple validation errors combined
+  - Detailed error context
+- **Example**:
+  ```rust
+  ValidationRules::new()
+      .required("age")
+      .numeric("age")
+      .min("age", 18)
+      .max("age", 120)
+      .custom("username", |val| !val.contains("admin"), "Cannot contain 'admin'")
+  ```
+
+### Tests - Phase 8
+- **208 unit tests passing** (+21 new tests from v0.10.0)
+- Named routes & URL generation: 6 tests
+- Route middleware: 2 tests
+- Enhanced response helpers: 8 tests
+- Request validation extensions: 7 tests
+- 12 doctests passing
+- Zero compiler warnings
+- All clippy checks passing
+
+### Developer Experience - Phase 8
+- **Named Routes**: Clean URL generation without hardcoding paths
+- **Route Middleware**: Fine-grained control over middleware application
+- **Response Helpers**: Comprehensive HTTP status code support
+- **Validation**: Powerful validation with custom logic support
+- **Type Safety**: Compile-time checks for route parameters
+
+### Code Quality - Phase 8
+- Simplified middleware chain implementation
+- Better separation of concerns
+- Comprehensive validation error reporting
+- Improved API ergonomics with fluent builders
+
 ## [0.10.0] - 2025-11-15
 
 ### Added - Phase 7: Testing, Configuration & Performance

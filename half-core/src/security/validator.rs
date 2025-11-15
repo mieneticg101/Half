@@ -179,21 +179,133 @@ impl ValidationRules {
         self
     }
 
+    /// Add a numeric rule for a field
+    pub fn numeric(mut self, field: impl Into<String>) -> Self {
+        self.rules
+            .entry(field.into())
+            .or_default()
+            .push(Rule::Numeric);
+        self
+    }
+
+    /// Add an alphanumeric rule for a field
+    pub fn alphanumeric(mut self, field: impl Into<String>) -> Self {
+        self.rules
+            .entry(field.into())
+            .or_default()
+            .push(Rule::Alphanumeric);
+        self
+    }
+
+    /// Add a minimum value rule for a field
+    pub fn min(mut self, field: impl Into<String>, value: i64) -> Self {
+        self.rules
+            .entry(field.into())
+            .or_default()
+            .push(Rule::Min { value });
+        self
+    }
+
+    /// Add a maximum value rule for a field
+    pub fn max(mut self, field: impl Into<String>, value: i64) -> Self {
+        self.rules
+            .entry(field.into())
+            .or_default()
+            .push(Rule::Max { value });
+        self
+    }
+
+    /// Add a custom validation rule for a field
+    ///
+    /// # Example
+    /// ```ignore
+    /// ValidationRules::new()
+    ///     .custom("username", |val| val.len() >= 3, "Username must be at least 3 characters")
+    /// ```
+    pub fn custom<F>(mut self, field: impl Into<String>, validator: F, message: impl Into<String>) -> Self
+    where
+        F: Fn(&str) -> bool + Send + Sync + 'static,
+    {
+        self.rules
+            .entry(field.into())
+            .or_default()
+            .push(Rule::Custom {
+                validator: Box::new(validator),
+                message: message.into(),
+            });
+        self
+    }
+
     /// Validate a set of values against the rules
+    ///
+    /// Returns detailed validation errors with field names.
     pub fn validate(&self, values: &HashMap<String, String>) -> Result<()> {
+        let mut errors = Vec::new();
+
         for (field, rules) in &self.rules {
             let value = values.get(field).map(|s| s.as_str()).unwrap_or("");
 
             for rule in rules {
-                match rule {
-                    Rule::Required => Validator::required(value)?,
-                    Rule::Length { min, max } => Validator::length(value, *min, *max)?,
-                    Rule::Email => Validator::email(value)?,
+                let result = match rule {
+                    Rule::Required => Validator::required(value)
+                        .map_err(|_| format!("Field '{}' is required", field)),
+
+                    Rule::Length { min, max } => Validator::length(value, *min, *max)
+                        .map_err(|_| format!("Field '{}' must be between {} and {} characters", field, min, max)),
+
+                    Rule::Email => Validator::email(value)
+                        .map_err(|_| format!("Field '{}' must be a valid email address", field)),
+
+                    Rule::Numeric => Validator::numeric(value)
+                        .map_err(|_| format!("Field '{}' must contain only numbers", field)),
+
+                    Rule::Alphanumeric => Validator::alphanumeric(value)
+                        .map_err(|_| format!("Field '{}' must contain only letters and numbers", field)),
+
+                    Rule::Min { value: min_val } => {
+                        if let Ok(num) = value.parse::<i64>() {
+                            if num < *min_val {
+                                Err(format!("Field '{}' must be at least {}", field, min_val))
+                            } else {
+                                Ok(())
+                            }
+                        } else {
+                            Err(format!("Field '{}' must be a valid number", field))
+                        }
+                    }
+
+                    Rule::Max { value: max_val } => {
+                        if let Ok(num) = value.parse::<i64>() {
+                            if num > *max_val {
+                                Err(format!("Field '{}' must be at most {}", field, max_val))
+                            } else {
+                                Ok(())
+                            }
+                        } else {
+                            Err(format!("Field '{}' must be a valid number", field))
+                        }
+                    }
+
+                    Rule::Custom { validator, message } => {
+                        if validator(value) {
+                            Ok(())
+                        } else {
+                            Err(format!("Field '{}': {}", field, message))
+                        }
+                    }
+                };
+
+                if let Err(error_msg) = result {
+                    errors.push(error_msg);
                 }
             }
         }
 
-        Ok(())
+        if errors.is_empty() {
+            Ok(())
+        } else {
+            Err(Error::ValidationError(errors.join("; ")))
+        }
     }
 }
 
@@ -208,6 +320,14 @@ enum Rule {
     Required,
     Length { min: usize, max: usize },
     Email,
+    Numeric,
+    Alphanumeric,
+    Min { value: i64 },
+    Max { value: i64 },
+    Custom {
+        validator: Box<dyn Fn(&str) -> bool + Send + Sync>,
+        message: String,
+    },
 }
 
 // Note: regex crate needs to be added to dependencies for full email validation
@@ -329,5 +449,110 @@ mod tests {
         values.insert("email".to_string(), "john@example.com".to_string());
 
         assert!(rules.validate(&values).is_ok());
+    }
+
+    #[test]
+    fn test_validation_rules_numeric() {
+        let rules = ValidationRules::new()
+            .required("age")
+            .numeric("age");
+
+        let mut values = HashMap::new();
+        values.insert("age".to_string(), "25".to_string());
+
+        assert!(rules.validate(&values).is_ok());
+
+        values.insert("age".to_string(), "abc".to_string());
+        assert!(rules.validate(&values).is_err());
+    }
+
+    #[test]
+    fn test_validation_rules_min_max() {
+        let rules = ValidationRules::new()
+            .required("score")
+            .min("score", 0)
+            .max("score", 100);
+
+        let mut values = HashMap::new();
+        values.insert("score".to_string(), "75".to_string());
+        assert!(rules.validate(&values).is_ok());
+
+        values.insert("score".to_string(), "150".to_string());
+        assert!(rules.validate(&values).is_err());
+
+        values.insert("score".to_string(), "-10".to_string());
+        assert!(rules.validate(&values).is_err());
+    }
+
+    #[test]
+    fn test_validation_rules_alphanumeric() {
+        let rules = ValidationRules::new()
+            .required("code")
+            .alphanumeric("code");
+
+        let mut values = HashMap::new();
+        values.insert("code".to_string(), "ABC123".to_string());
+        assert!(rules.validate(&values).is_ok());
+
+        values.insert("code".to_string(), "ABC-123".to_string());
+        assert!(rules.validate(&values).is_err());
+    }
+
+    #[test]
+    fn test_validation_rules_custom() {
+        let rules = ValidationRules::new()
+            .required("username")
+            .custom("username", |val| !val.contains("admin"), "Username cannot contain 'admin'");
+
+        let mut values = HashMap::new();
+        values.insert("username".to_string(), "johndoe".to_string());
+        assert!(rules.validate(&values).is_ok());
+
+        values.insert("username".to_string(), "administrator".to_string());
+        assert!(rules.validate(&values).is_err());
+    }
+
+    #[test]
+    fn test_validation_error_messages() {
+        let rules = ValidationRules::new()
+            .required("email")
+            .email("email");
+
+        let mut values = HashMap::new();
+        values.insert("email".to_string(), "invalid-email".to_string());
+
+        let result = rules.validate(&values);
+        assert!(result.is_err());
+
+        if let Err(Error::ValidationError(msg)) = result {
+            assert!(msg.contains("email"));
+            assert!(msg.contains("valid email address"));
+        } else {
+            panic!("Expected ValidationError");
+        }
+    }
+
+    #[test]
+    fn test_validation_multiple_errors() {
+        let rules = ValidationRules::new()
+            .required("username")
+            .length("username", 5, 20)
+            .required("email")
+            .email("email");
+
+        let mut values = HashMap::new();
+        values.insert("username".to_string(), "abc".to_string()); // Too short
+        values.insert("email".to_string(), "invalid".to_string()); // Invalid email
+
+        let result = rules.validate(&values);
+        assert!(result.is_err());
+
+        if let Err(Error::ValidationError(msg)) = result {
+            // Should contain both errors
+            assert!(msg.contains("username"));
+            assert!(msg.contains("email"));
+        } else {
+            panic!("Expected ValidationError");
+        }
     }
 }
