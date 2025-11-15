@@ -9,7 +9,7 @@ use std::pin::Pin;
 /// Handler trait for route handlers
 ///
 /// This trait is automatically implemented for async functions that return
-/// a Response or Result<Response>.
+/// a Response or `Result<Response>`.
 pub trait Handler: Send + Sync + 'static {
     /// Handle a request and return a response
     fn call(&self, req: Request) -> Pin<Box<dyn Future<Output = Result<Response>> + Send + '_>>;
