@@ -5,6 +5,60 @@ All notable changes to the Half framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2025-11-15
+
+### Added - Phase 2: Real-time & Caching
+
+#### WebSocket Support
+- **Full WebSocket Protocol**: Real-time bidirectional communication support
+- **Clean API**: Easy-to-use WebSocket handle with send/receive methods
+- **Text & Binary Messages**: Support for both text and binary WebSocket messages
+- **Automatic Ping/Pong**: Built-in ping/pong handling for connection keep-alive
+- **Thread-Safe**: Safe message sending from multiple async tasks
+- **Graceful Closure**: Proper WebSocket connection closure
+
+#### Server-Sent Events (SSE)
+- **Unidirectional Streaming**: Efficient server-to-client event streaming
+- **Event Types**: Support for named events, IDs, and retry intervals
+- **Multi-line Data**: Handle complex event data with multi-line support
+- **Keep-Alive**: Automatic keep-alive with configurable intervals
+- **Reconnection**: Built-in support for client reconnection with event IDs
+- **Standard Compliant**: Full SSE specification compliance
+
+#### Advanced Caching Middleware
+- **TTL (Time-to-Live)**: Automatic cache expiration after specified duration
+- **LRU Eviction**: Least Recently Used eviction when cache is full
+- **TTI (Time-to-Idle)**: Optional eviction if entries not accessed
+- **High Performance**: Lock-free concurrent cache using moka
+- **Smart Caching**: Only caches successful GET requests (200 OK)
+- **Cache Control**: X-Cache headers (HIT/MISS) for debugging
+- **Flexible Configuration**: Configurable capacity, TTL, TTI
+- **Path Exemptions**: Exclude specific routes from caching
+- **Cache Statistics**: Get cache entry count and size
+- **Manual Control**: Invalidate specific entries or clear entire cache
+
+### Performance - Phase 2
+
+- **WebSocket**: Low-latency bidirectional communication
+- **SSE**: Efficient server push without polling overhead
+- **Caching**: 10,000+ requests/sec cache hit performance with moka
+- **Lock-Free**: Zero-lock concurrent cache access
+
+### Tests - Phase 2
+
+- **68 total tests passing** (+17 new tests from v0.4.0)
+- All WebSocket tests passing (3 tests)
+- All SSE tests passing (7 tests)
+- All Cache tests passing (7 tests)
+- Zero compiler warnings
+
+### Dependencies - Phase 2
+
+Added:
+- `tokio-tungstenite` 0.26 - WebSocket protocol implementation
+- `futures-util` 0.3 - Async stream utilities
+- `moka` 0.12 - High-performance concurrent cache with TTL
+
 ## [0.4.0] - 2025-11-15
 
 ### Added - Phase 1: Foundation

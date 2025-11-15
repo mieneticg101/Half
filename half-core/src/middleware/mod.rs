@@ -2,6 +2,7 @@
 //!
 //! Provides a flexible middleware system for request/response processing.
 
+pub mod cache;
 pub mod compression;
 pub mod ratelimit;
 
@@ -10,6 +11,7 @@ use std::future::Future;
 use std::pin::Pin;
 
 // Re-export middleware types
+pub use cache::{Cache, CacheConfig, CacheStats};
 pub use compression::{Compression, CompressionAlgorithm, CompressionLevel};
 pub use ratelimit::{RateLimiter, RateLimitConfig};
 

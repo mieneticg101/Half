@@ -7,7 +7,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.4.0"
+version = "0.5.0"
 edition = "2024"
 authors = ["Half Framework Contributors"]
 license = "MIT OR Apache-2.0"
@@ -53,6 +53,13 @@ flate2 = "1.0"  # Fallback compression
 # Rate Limiting
 governor = "0.7"
 parking_lot = "0.12"  # High-performance synchronization primitives
+
+# WebSocket & SSE (Phase 2)
+tokio-tungstenite = "0.26"
+futures-util = "0.3"
+
+# Caching (Phase 2)
+moka = { version = "0.12", features = ["future"] }  # High-performance concurrent cache with TTL
 
 # CLI
 clap = { version = "4.5", features = ["derive"] }

@@ -50,6 +50,13 @@ flate2 = { workspace = true }
 governor = { workspace = true }
 parking_lot = { workspace = true }
 
+# WebSocket & SSE (Phase 2)
+tokio-tungstenite = { workspace = true }
+futures-util = { workspace = true }
+
+# Caching (Phase 2)
+moka = { workspace = true }
+
 # Macros
 half-macros = { path = "../half-macros" }
 

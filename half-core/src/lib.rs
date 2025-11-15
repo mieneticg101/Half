@@ -70,6 +70,8 @@ pub mod response;
 pub mod router;
 pub mod security;
 pub mod server;
+pub mod sse;
+pub mod websocket;
 
 // Re-export commonly used types
 pub use error::{Error, Result};
@@ -78,6 +80,8 @@ pub use request::Request;
 pub use response::{Response, Cookie, SameSite};
 pub use router::Router;
 pub use server::{Server, TlsConfig};
+pub use sse::{SseChannel, SseEvent, SseStream};
+pub use websocket::{WebSocket, WsMessage};
 
 // Re-export macros from half-macros
 pub use half_macros::{get, post, put, delete, patch, route};
