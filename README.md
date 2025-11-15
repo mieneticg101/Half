@@ -7,7 +7,8 @@ A **lightweight**, **secure**, and **high-performance** Rust web framework.
 [![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
 [![Edition](https://img.shields.io/badge/edition-2024-green.svg)](https://doc.rust-lang.org/edition-guide/rust-2024/)
-[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)](CHANGELOG.md)
+[![TLS](https://img.shields.io/badge/TLS-1.3-green.svg)](https://tools.ietf.org/html/rfc8446)
 
 </div>
 
@@ -15,6 +16,8 @@ A **lightweight**, **secure**, and **high-performance** Rust web framework.
 
 - **⚡ Blazing Fast**: Zero-cost abstractions and efficient routing
 - **🔒 Secure by Default**: Built-in CSRF, XSS protection, and input validation
+- **🔐 TLS 1.3 Support**: Native HTTPS with modern encryption
+- **🛡️ Advanced Security**: Helmet headers and nonce-based replay protection
 - **🪶 Lightweight**: Minimal dependencies and small binary size
 - **🎯 Simple API**: Intuitive and easy to use, yet powerful
 - **🛡️ Type-Safe**: Compile-time route verification
@@ -124,6 +127,53 @@ router.get("/search", |req: Request| async move {
 
 Half includes built-in security features to protect your application:
 
+### TLS 1.3 Support
+
+```rust
+use half_core::{Server, Router, TlsConfig};
+
+let tls = TlsConfig::new("cert.pem", "key.pem");
+
+Server::new(router)
+    .bind(([0, 0, 0, 0], 443))
+    .tls(tls)
+    .run()
+    .await?;
+```
+
+### Helmet Security Headers (Beyond Helmet.js)
+
+```rust
+use half_core::security::Helmet;
+
+// Use default strict security
+let helmet = Helmet::new();
+router.use_middleware(helmet);
+
+// Or customize
+let helmet = Helmet::new()
+    .hsts(31536000, true, true)  // 1 year HSTS with preload
+    .frame_options("DENY")
+    .referrer_policy("strict-origin-when-cross-origin");
+
+router.use_middleware(helmet);
+```
+
+### Nonce Protection (One-Time Requests)
+
+```rust
+use half_core::security::NonceProtection;
+
+let nonce = NonceProtection::new()
+    .ttl(300)  // 5 minutes
+    .exempt("/public");
+
+router.use_middleware(nonce);
+
+// Generate nonce for clients
+let nonce_value = nonce.generate_nonce();
+```
+
 ### CSRF Protection
 
 ```rust
@@ -194,13 +244,15 @@ half new my-project
 half route /users/:id --method GET
 ```
 
-## 📖 Full Example
+## 📖 Full Examples
 
 Check out the `examples/` directory for complete examples:
 
 - `hello.rs` - Simple Hello World
 - `json_api.rs` - JSON API with user management
 - `routing.rs` - Advanced routing with parameters
+- `secure_server.rs` - HTTPS with TLS 1.3, Nonce Protection, and Helmet
+- `helmet_demo.rs` - Comprehensive security headers demonstration
 
 Run an example:
 
@@ -208,6 +260,8 @@ Run an example:
 cargo run --example hello
 cargo run --example json_api
 cargo run --example routing
+cargo run --example secure_server  # Requires cert.pem and key.pem
+cargo run --example helmet_demo
 ```
 
 ## 🏗️ Architecture

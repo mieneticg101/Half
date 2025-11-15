@@ -7,7 +7,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 authors = ["Half Framework Contributors"]
 license = "MIT OR Apache-2.0"
@@ -31,6 +31,12 @@ hmac = "0.12"
 base64 = "0.22"
 htmlescape = "0.3"
 rand = "0.9"  # Updated to latest
+dashmap = "6.1"  # Thread-safe HashMap for nonce storage
+
+# TLS - Pure Rust TLS 1.3 implementation
+rustls = "0.23"
+tokio-rustls = "0.26"
+rustls-pemfile = "2.2"
 
 # Utilities
 bytes = "1.10"  # Updated to latest
@@ -38,6 +44,7 @@ futures = "0.3"
 pin-project = "1.1"
 thiserror = "2.0"
 percent-encoding = "2.3"
+chrono = "0.4"  # Time management for nonce expiration
 
 # CLI
 clap = { version = "4.5", features = ["derive"] }

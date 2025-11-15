@@ -51,6 +51,10 @@ pub enum Error {
     #[error("Invalid CSRF token")]
     InvalidCsrfToken,
 
+    /// Invalid nonce (replay protection)
+    #[error("Invalid nonce: {0}")]
+    InvalidNonce(String),
+
     /// Invalid input (validation error)
     #[error("Validation error: {0}")]
     ValidationError(String),
@@ -68,7 +72,7 @@ impl Error {
             Error::MethodNotAllowed { .. } => 405,
             Error::BadRequest(_) => 400,
             Error::Unauthorized(_) => 401,
-            Error::Forbidden(_) | Error::InvalidCsrfToken => 403,
+            Error::Forbidden(_) | Error::InvalidCsrfToken | Error::InvalidNonce(_) => 403,
             Error::ValidationError(_) => 422,
             Error::Http(_) | Error::Io(_) | Error::Json(_) | Error::InternalError(_) => 500,
             Error::Custom(_) => 500,

@@ -27,6 +27,12 @@ hmac = { workspace = true }
 base64 = { workspace = true }
 htmlescape = { workspace = true }
 rand = { workspace = true }
+dashmap = { workspace = true }
+
+# TLS
+rustls = { workspace = true }
+tokio-rustls = { workspace = true }
+rustls-pemfile = { workspace = true }
 
 # Utilities
 bytes = { workspace = true }
@@ -34,6 +40,7 @@ futures = { workspace = true }
 pin-project = { workspace = true }
 thiserror = { workspace = true }
 percent-encoding = { workspace = true }
+chrono = { workspace = true }
 
 # Macros
 half-macros = { path = "../half-macros" }
@@ -44,4 +51,5 @@ tokio-test = "0.4"
 [features]
 default = ["security"]
 security = []
-full = ["security"]
+tls = []
+full = ["security", "tls"]

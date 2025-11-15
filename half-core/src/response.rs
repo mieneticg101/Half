@@ -89,6 +89,16 @@ impl Response {
         self
     }
 
+    /// Set a header with string key and value (convenience method)
+    pub fn header_str(mut self, key: &str, value: &str) -> Self {
+        if let Ok(header_name) = HeaderName::from_bytes(key.as_bytes()) {
+            if let Ok(header_value) = HeaderValue::from_str(value) {
+                self.headers.insert(header_name, header_value);
+            }
+        }
+        self
+    }
+
     /// Set Content-Type header
     pub fn content_type(self, content_type: &str) -> Self {
         self.header(

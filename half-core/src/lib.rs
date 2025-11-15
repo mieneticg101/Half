@@ -77,13 +77,19 @@ pub use handler::Handler;
 pub use request::Request;
 pub use response::{Response, Cookie, SameSite};
 pub use router::Router;
-pub use server::Server;
+pub use server::{Server, TlsConfig};
 
 // Re-export macros from half-macros
 pub use half_macros::{get, post, put, delete, patch, route};
 
 // Re-export security features
-pub use security::{CsrfProtection, CsrfToken, XssFilter, Validator};
+pub use security::{
+    CsrfProtection, CsrfToken,
+    XssFilter,
+    Validator,
+    NonceProtection,
+    Helmet, CspConfig, PermissionsPolicyConfig,
+};
 
 /// Prelude module for convenient imports
 pub mod prelude {
@@ -94,8 +100,14 @@ pub mod prelude {
         request::Request,
         response::{Cookie, Response, SameSite},
         router::Router,
-        security::{CsrfProtection, CsrfToken, Validator, XssFilter},
-        server::Server,
+        security::{
+            CsrfProtection, CsrfToken,
+            XssFilter,
+            Validator,
+            NonceProtection,
+            Helmet, CspConfig, PermissionsPolicyConfig,
+        },
+        server::{Server, TlsConfig},
     };
 
     pub use half_macros::{delete, get, patch, post, put, route};
