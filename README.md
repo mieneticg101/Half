@@ -9,7 +9,8 @@ A **lightweight**, **secure**, and **high-performance** Rust web framework with 
 [![Edition](https://img.shields.io/badge/edition-2024-green.svg)](https://doc.rust-lang.org/edition-guide/rust-2024/)
 [![Version](https://img.shields.io/badge/version-0.14.0-blue.svg)](CHANGELOG.md)
 [![TLS](https://img.shields.io/badge/TLS-1.3-green.svg)](https://tools.ietf.org/html/rfc8446)
-[![Tests](https://img.shields.io/badge/tests-304%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-347%20passing-brightgreen.svg)]()
+[![CI](https://img.shields.io/github/actions/workflow/status/mieneticg101/Half/ci.yml?branch=main&label=CI)](https://github.com/mieneticg101/Half/actions)
 
 </div>
 

@@ -1,0 +1,26 @@
+[default]
+extend-ignore-re = [
+    "(?i)connexion",  # French word
+    "(?i)ba",         # Common in hex/base64
+]
+
+[default.extend-words]
+# Add project-specific words that aren't typos
+ba = "ba"
+connexion = "connexion"
+
+[files]
+extend-exclude = [
+    "*.lock",
+    "target/",
+    "*.svg",
+    "*.png",
+    "*.jpg",
+    "*.jpeg",
+    "*.gif",
+    "*.ico",
+    "*.woff",
+    "*.woff2",
+    "*.ttf",
+    "*.eot",
+]
