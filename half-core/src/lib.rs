@@ -102,6 +102,11 @@ pub use orm::{
     schema::{Schema, Table, Column, ColumnType, Constraint, Index, ForeignKeyAction},
     migrations::{Migration, MigrationRunner, MigrationVersion, MigrationBuilder},
     relations::{Relation, RelationType, HasOne, HasMany, BelongsTo, BelongsToMany},
+    drivers::{
+        DatabaseType, DatabaseDriver, ConnectionInfo,
+        PostgresDriver, MySqlDriver, SqliteDriver,
+        SqlDialect, DialectType,
+    },
 };
 pub use handler::Handler;
 pub use health::{HealthCheck, HealthResponse, HealthStatus, ComponentHealth};
@@ -150,6 +155,7 @@ pub mod prelude {
             schema::{Schema, Table, Column, ColumnType},
             migrations::{Migration, MigrationRunner},
             relations::{HasOne, HasMany, BelongsTo, BelongsToMany},
+            drivers::{DatabaseType, DatabaseDriver, PostgresDriver, MySqlDriver, SqliteDriver},
         },
         request::Request,
         response::{Cookie, Response, SameSite},

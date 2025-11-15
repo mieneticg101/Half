@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use parking_lot::RwLock;
 use crate::orm::model::{Value, ModelError};
+use crate::orm::drivers::{DatabaseDriver, DatabaseType, PostgresDriver, MySqlDriver, SqliteDriver};
 
 /// Database configuration
 #[derive(Debug, Clone)]
@@ -90,15 +91,39 @@ pub struct ConnectionPool {
     config: DatabaseConfig,
     connections: Arc<RwLock<Vec<PooledConnection>>>,
     stats: Arc<RwLock<PoolStats>>,
+    driver: Arc<dyn DatabaseDriver>,
 }
 
 impl ConnectionPool {
-    /// Create a new connection pool
+    /// Create a new connection pool with auto-detected driver
     pub fn new(config: DatabaseConfig) -> Self {
+        let driver = Self::detect_driver(&config.url);
         Self {
             config,
             connections: Arc::new(RwLock::new(Vec::new())),
             stats: Arc::new(RwLock::new(PoolStats::default())),
+            driver,
+        }
+    }
+
+    /// Create a new connection pool with explicit driver
+    pub fn with_driver(config: DatabaseConfig, driver: Arc<dyn DatabaseDriver>) -> Self {
+        Self {
+            config,
+            connections: Arc::new(RwLock::new(Vec::new())),
+            stats: Arc::new(RwLock::new(PoolStats::default())),
+            driver,
+        }
+    }
+
+    /// Detect database driver from URL
+    fn detect_driver(url: &str) -> Arc<dyn DatabaseDriver> {
+        let db_type = DatabaseType::from_url(url).unwrap_or(DatabaseType::SQLite);
+        match db_type {
+            DatabaseType::PostgreSQL => Arc::new(PostgresDriver::new()),
+            DatabaseType::MySQL => Arc::new(MySqlDriver::new()),
+            DatabaseType::SQLite => Arc::new(SqliteDriver::new()),
+            _ => Arc::new(SqliteDriver::new()), // Default to SQLite
         }
     }
 
@@ -137,8 +162,12 @@ impl ConnectionPool {
 
     /// Create a new connection
     fn create_connection(&self) -> Result<PooledConnection, ConnectionError> {
-        // In a real implementation, this would create an actual database connection
-        // For now, we create a mock connection
+        // In a real implementation, this would use the driver to create an actual database connection:
+        // let connection = self.driver.connect(&self.config.url)?;
+        //
+        // For now, we create a mock connection for testing purposes.
+        // When integrating with sqlx or other database libraries, the driver's connect()
+        // method would return a concrete connection implementation.
         Ok(PooledConnection {
             id: uuid::Uuid::new_v4().to_string(),
             in_use: true,
@@ -164,6 +193,16 @@ impl ConnectionPool {
     /// Get pool configuration
     pub fn config(&self) -> &DatabaseConfig {
         &self.config
+    }
+
+    /// Get the database driver
+    pub fn driver(&self) -> &Arc<dyn DatabaseDriver> {
+        &self.driver
+    }
+
+    /// Get the database type
+    pub fn database_type(&self) -> DatabaseType {
+        self.driver.database_type()
     }
 }
 

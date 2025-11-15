@@ -34,11 +34,13 @@ A **lightweight**, **secure**, and **high-performance** Rust web framework with 
 
 ### Database & ORM
 - 🗄️ **Internal ORM System**: Type-safe models with automatic CRUD
+- 🎯 **Multi-Database Support**: PostgreSQL, MySQL, SQLite (Prisma-like)
 - 🔗 **Relationships**: HasOne, HasMany, BelongsTo, BelongsToMany
 - 📊 **Query Builder**: Fluent API for complex queries
 - 🔄 **Migrations**: Schema versioning with up/down migrations
 - 🏊 **Connection Pooling**: Thread-safe connection management
 - 💾 **Transactions**: ACID transactions with auto-rollback
+- 🌐 **SQL Dialects**: Database-specific SQL generation
 
 ### Security
 - 🛡️ **CSRF Protection**: Token-based protection for state-changing requests
@@ -598,6 +600,7 @@ half migrate status
 
 - [Changelog](CHANGELOG.md) - Version history and changes
 - [Performance](PERFORMANCE.md) - Performance optimizations guide
+- [Multi-Database Support](MULTI_DATABASE.md) - PostgreSQL, MySQL, SQLite guide
 - [Examples](examples/) - Code examples
 - API Documentation (run `cargo doc --open`)
 
