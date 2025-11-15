@@ -5,6 +5,56 @@ All notable changes to the Half framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2025-11-15
+
+### Added - Phase 3: Health Checks, Metrics & Sessions
+
+#### Health Checks
+- **Liveness Probe**: Simple endpoint to check if service is running
+- **Readiness Probe**: Check if service and all components are ready
+- **Component Health Checks**: Monitor individual service components
+- **Customizable Checks**: Add custom health checks for databases, external services, etc.
+- **Automatic Timeouts**: Prevent hanging health checks
+- **Uptime Tracking**: Track service uptime automatically
+- **Status Codes**: Proper HTTP status codes (200 OK, 503 Service Unavailable)
+- **Detailed Responses**: JSON responses with component details
+
+#### Metrics & Monitoring
+- **Prometheus Compatible**: Standard Prometheus text format export
+- **Counter Metrics**: Track total counts (requests, errors, etc.)
+- **Gauge Metrics**: Track current values (connections, memory, etc.)
+- **Histogram Metrics**: Track distributions (response times, sizes, etc.)
+- **Automatic Uptime**: Built-in process uptime metric
+- **Thread-Safe**: Lock-free counters, RwLock-protected gauges
+- **/metrics Endpoint**: Ready-to-use Prometheus scraping endpoint
+- **High Performance**: Minimal overhead using atomic operations
+
+#### Session Management
+- **Secure Sessions**: Cryptographically secure session IDs (32 bytes base64)
+- **TTL Support**: Automatic session expiration with configurable TTL
+- **Auto Cleanup**: Background task for removing expired sessions
+- **Thread-Safe**: Concurrent access using DashMap
+- **Cookie Integration**: Ready for cookie-based session management
+- **Idle Timeout**: Track last access time for idle session cleanup
+- **Session Statistics**: Monitor active sessions and average age
+- **Key-Value Store**: Simple string-based session data storage
+
+### Performance - Phase 3
+
+- **Health Checks**: Sub-millisecond response time for liveness probes
+- **Metrics**: Lock-free counters, atomic operations for high performance
+- **Sessions**: DashMap-based concurrent access, O(1) operations
+- **Memory Efficient**: Automatic cleanup prevents memory leaks
+
+### Tests - Phase 3
+
+- **90 total tests passing** (+22 new tests from v0.5.0)
+- Health check tests: 6 passing
+- Metrics tests: 9 passing
+- Session tests: 7 passing
+- Zero compiler warnings
+- All clippy checks passing
+
 ## [0.5.0] - 2025-11-15
 
 ### Added - Phase 2: Real-time & Caching

@@ -64,22 +64,28 @@
 // Public exports
 pub mod error;
 pub mod handler;
+pub mod health;
+pub mod metrics;
 pub mod middleware;
 pub mod request;
 pub mod response;
 pub mod router;
 pub mod security;
 pub mod server;
+pub mod session;
 pub mod sse;
 pub mod websocket;
 
 // Re-export commonly used types
 pub use error::{Error, Result};
 pub use handler::Handler;
+pub use health::{HealthCheck, HealthResponse, HealthStatus, ComponentHealth};
+pub use metrics::{Metrics, Counter, Gauge, Histogram, Timer};
 pub use request::Request;
 pub use response::{Response, Cookie, SameSite};
 pub use router::Router;
 pub use server::{Server, TlsConfig};
+pub use session::{SessionStore, Session, SessionConfig, SessionStats};
 pub use sse::{SseChannel, SseEvent, SseStream};
 pub use websocket::{WebSocket, WsMessage};
 
