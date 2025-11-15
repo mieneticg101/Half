@@ -239,11 +239,161 @@ impl Router {
         // TODO: Implement middleware chain execution
         route.handler.handle(req).await
     }
+
+    /// Create a route group with a prefix
+    ///
+    /// Route groups allow you to organize related routes with a common prefix
+    /// and optionally shared middleware.
+    ///
+    /// # Example
+    /// ```ignore
+    /// let mut router = Router::new();
+    /// router.group("/api", |api| {
+    ///     api.get("/users", list_users);
+    ///     api.post("/users", create_user);
+    /// });
+    /// // Creates routes: GET /api/users, POST /api/users
+    /// ```
+    pub fn group<F>(&mut self, prefix: &str, configure: F) -> &mut Self
+    where
+        F: FnOnce(&mut RouteGroup),
+    {
+        let mut group = RouteGroup::new(prefix.to_string(), self);
+        configure(&mut group);
+        self
+    }
+
+    /// Mount another router at a prefix
+    ///
+    /// This allows you to create modular routers and combine them.
+    ///
+    /// # Example
+    /// ```ignore
+    /// let mut api_router = Router::new();
+    /// api_router.get("/users", list_users);
+    ///
+    /// let mut main_router = Router::new();
+    /// main_router.mount("/api", api_router);
+    /// // Creates route: GET /api/users
+    /// ```
+    pub fn mount(&mut self, prefix: &str, other: Router) -> &mut Self {
+        let prefix = prefix.trim_end_matches('/');
+
+        for route in other.routes {
+            let path = if route.path.starts_with('/') {
+                format!("{}{}", prefix, route.path)
+            } else {
+                format!("{}/{}", prefix, route.path)
+            };
+
+            // Re-register the route with the prefixed path
+            let route_index = self.routes.len();
+
+            // Update exact_routes if it was an exact match
+            if !path.contains(':') {
+                let key = format!("{} {}", route.method.as_str(), path);
+                self.exact_routes.insert(key, route_index);
+            }
+
+            self.routes.push(Route {
+                method: route.method,
+                path,
+                handler: route.handler,
+                middlewares: route.middlewares,
+            });
+        }
+
+        self
+    }
 }
 
 impl Default for Router {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+/// Route group builder
+///
+/// Provides a scoped API for registering routes with a common prefix.
+pub struct RouteGroup<'a> {
+    prefix: String,
+    router: &'a mut Router,
+}
+
+impl<'a> RouteGroup<'a> {
+    fn new(prefix: String, router: &'a mut Router) -> Self {
+        Self { prefix, router }
+    }
+
+    fn prefixed_path(&self, path: &str) -> String {
+        let prefix = self.prefix.trim_end_matches('/');
+        if path.starts_with('/') {
+            format!("{}{}", prefix, path)
+        } else {
+            format!("{}/{}", prefix, path)
+        }
+    }
+
+    /// Register a GET route in this group
+    pub fn get<H>(&mut self, path: &str, handler: H) -> &mut Self
+    where
+        H: Handler,
+    {
+        let full_path = self.prefixed_path(path);
+        self.router.get(full_path, handler);
+        self
+    }
+
+    /// Register a POST route in this group
+    pub fn post<H>(&mut self, path: &str, handler: H) -> &mut Self
+    where
+        H: Handler,
+    {
+        let full_path = self.prefixed_path(path);
+        self.router.post(full_path, handler);
+        self
+    }
+
+    /// Register a PUT route in this group
+    pub fn put<H>(&mut self, path: &str, handler: H) -> &mut Self
+    where
+        H: Handler,
+    {
+        let full_path = self.prefixed_path(path);
+        self.router.put(full_path, handler);
+        self
+    }
+
+    /// Register a DELETE route in this group
+    pub fn delete<H>(&mut self, path: &str, handler: H) -> &mut Self
+    where
+        H: Handler,
+    {
+        let full_path = self.prefixed_path(path);
+        self.router.delete(full_path, handler);
+        self
+    }
+
+    /// Register a PATCH route in this group
+    pub fn patch<H>(&mut self, path: &str, handler: H) -> &mut Self
+    where
+        H: Handler,
+    {
+        let full_path = self.prefixed_path(path);
+        self.router.patch(full_path, handler);
+        self
+    }
+
+    /// Create a nested group
+    pub fn group<F>(&mut self, prefix: &str, configure: F) -> &mut Self
+    where
+        F: FnOnce(&mut RouteGroup),
+    {
+        let nested_prefix = self.prefixed_path(prefix);
+        let mut nested_group = RouteGroup::new(nested_prefix, self.router);
+        configure(&mut nested_group);
+        self
     }
 }
 

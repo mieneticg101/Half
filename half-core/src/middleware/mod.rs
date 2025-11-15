@@ -4,7 +4,10 @@
 
 pub mod cache;
 pub mod compression;
+pub mod conditional;
 pub mod ratelimit;
+pub mod recovery;
+pub mod timeout;
 
 use crate::{Request, Response, error::Result};
 use std::future::Future;
@@ -13,7 +16,10 @@ use std::pin::Pin;
 // Re-export middleware types
 pub use cache::{Cache, CacheConfig, CacheStats};
 pub use compression::{Compression, CompressionAlgorithm, CompressionLevel};
+pub use conditional::Conditional;
 pub use ratelimit::{RateLimiter, RateLimitConfig};
+pub use recovery::{Recovery, RecoveryConfig, RecoveryMode};
+pub use timeout::{Timeout, TimeoutConfig};
 
 /// Next middleware in the chain
 pub type Next = Box<dyn FnOnce(Request) -> Pin<Box<dyn Future<Output = Result<Response>> + Send>> + Send>;

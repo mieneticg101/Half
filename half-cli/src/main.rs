@@ -30,6 +30,16 @@ enum Commands {
         #[arg(short, long, default_value = "GET")]
         method: String,
     },
+    /// Generate a new middleware
+    Middleware {
+        /// Middleware name (e.g., "Auth", "RateLimit")
+        name: String,
+    },
+    /// Generate a new controller
+    Controller {
+        /// Controller name (e.g., "User", "Post")
+        name: String,
+    },
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -41,6 +51,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Commands::Route { path, method } => {
             generate_route(&path, &method)?;
+        }
+        Commands::Middleware { name } => {
+            generate_middleware(&name)?;
+        }
+        Commands::Controller { name } => {
+            generate_controller(&name)?;
         }
     }
 
@@ -191,6 +207,171 @@ async fn {}_handler(req: Request) -> Response {{
     println!("{}", handler_code);
     println!("\nAnd register it in your router:");
     println!("  router.{}(\"{}\", {}_handler);", method.to_lowercase(), path, fn_name);
+
+    Ok(())
+}
+
+/// Generate a new middleware
+fn generate_middleware(name: &str) -> Result<(), Box<dyn std::error::Error>> {
+    println!("🔧 Generating middleware: {}", name);
+
+    let middleware_code = format!(
+        r#"use half_core::{{middleware::Middleware, Request, Response, Result}};
+use std::future::Future;
+use std::pin::Pin;
+
+/// {} middleware
+pub struct {} {{
+    // Add configuration fields here
+}}
+
+impl {} {{
+    /// Create new {} middleware
+    pub fn new() -> Self {{
+        Self {{
+            // Initialize fields here
+        }}
+    }}
+}}
+
+impl Default for {} {{
+    fn default() -> Self {{
+        Self::new()
+    }}
+}}
+
+impl Middleware for {} {{
+    fn handle(
+        &self,
+        req: Request,
+        next: half_core::middleware::Next,
+    ) -> Pin<Box<dyn Future<Output = Result<Response>> + Send + '_>> {{
+        Box::pin(async move {{
+            // Process request before handler
+            println!("{{}} middleware: processing request", "{}");
+
+            // Call the next middleware or handler
+            let response = next(req).await?;
+
+            // Process response after handler
+            println!("{{}} middleware: processing response", "{}");
+
+            Ok(response)
+        }})
+    }}
+}}
+
+#[cfg(test)]
+mod tests {{
+    use super::*;
+
+    #[test]
+    fn test_{}_creation() {{
+        let _middleware = {}::new();
+        assert!(true);
+    }}
+}}
+"#,
+        name, name, name, name, name, name, name, name, name.to_lowercase(), name
+    );
+
+    println!("\n📋 Middleware code:\n");
+    println!("{}", middleware_code);
+    println!("\n💡 Usage:");
+    println!("  let mut router = Router::new();");
+    println!("  router.use_middleware({}::new());", name);
+
+    Ok(())
+}
+
+/// Generate a new controller
+fn generate_controller(name: &str) -> Result<(), Box<dyn std::error::Error>> {
+    println!("📦 Generating controller: {}", name);
+
+    let controller_name = name.to_lowercase();
+    let controller_code = format!(
+        r#"use half_core::{{Request, Response, Result}};
+use serde_json::json;
+
+/// {} controller
+pub struct {}Controller;
+
+impl {}Controller {{
+    /// List all {}s
+    pub async fn index(_req: Request) -> Response {{
+        // TODO: Fetch {}s from database
+        Response::json(&json!({{
+            "{}s": []
+        }}))
+        .unwrap_or_else(|_| Response::internal_error())
+    }}
+
+    /// Get a single {} by ID
+    pub async fn show(req: Request) -> Response {{
+        let id = req.param("id").unwrap_or("unknown");
+
+        // TODO: Fetch {} from database
+        Response::json(&json!({{
+            "{}_id": id,
+            "message": "TODO: Implement show"
+        }}))
+        .unwrap_or_else(|_| Response::internal_error())
+    }}
+
+    /// Create a new {}
+    pub async fn create(_req: Request) -> Response {{
+        // TODO: Parse request body and create {}
+        Response::created(None)
+            .body(b"Created".to_vec())
+    }}
+
+    /// Update a {}
+    pub async fn update(req: Request) -> Response {{
+        let id = req.param("id").unwrap_or("unknown");
+
+        // TODO: Parse request body and update {}
+        Response::json(&json!({{
+            "{}_id": id,
+            "message": "Updated"
+        }}))
+        .unwrap_or_else(|_| Response::internal_error())
+    }}
+
+    /// Delete a {}
+    pub async fn destroy(req: Request) -> Response {{
+        let id = req.param("id").unwrap_or("unknown");
+
+        // TODO: Delete {} from database
+        Response::no_content()
+    }}
+}}
+
+#[cfg(test)]
+mod tests {{
+    use super::*;
+
+    #[test]
+    fn test_controller_exists() {{
+        // Smoke test to ensure controller compiles
+        assert!(true);
+    }}
+}}
+"#,
+        name, name, name, controller_name, controller_name, controller_name,
+        name, name, controller_name, name, name, name, name, controller_name,
+        name, name
+    );
+
+    println!("\n📋 Controller code:\n");
+    println!("{}", controller_code);
+    println!("\n💡 Register routes:");
+    println!("  router.group(\"/{}s\", |group| {{", controller_name);
+    println!("      group.get(\"/\", {}Controller::index);", name);
+    println!("      group.get(\"/:id\", {}Controller::show);", name);
+    println!("      group.post(\"/\", {}Controller::create);", name);
+    println!("      group.put(\"/:id\", {}Controller::update);", name);
+    println!("      group.delete(\"/:id\", {}Controller::destroy);", name);
+    println!("  }});");
 
     Ok(())
 }

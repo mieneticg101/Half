@@ -220,6 +220,95 @@ impl Response {
         }
     }
 
+    /// Create a 301 Moved Permanently redirect
+    pub fn redirect_permanent(location: &str) -> Self {
+        Self::new()
+            .status(StatusCode::MOVED_PERMANENTLY)
+            .header(
+                HeaderName::from_static("location"),
+                HeaderValue::from_str(location)
+                    .unwrap_or_else(|_| HeaderValue::from_static("/")),
+            )
+    }
+
+    /// Create a 302 Found redirect (temporary)
+    pub fn redirect_temporary(location: &str) -> Self {
+        Self::new()
+            .status(StatusCode::FOUND)
+            .header(
+                HeaderName::from_static("location"),
+                HeaderValue::from_str(location)
+                    .unwrap_or_else(|_| HeaderValue::from_static("/")),
+            )
+    }
+
+    /// Create a 307 Temporary Redirect (preserves method)
+    pub fn redirect_see_other(location: &str) -> Self {
+        Self::new()
+            .status(StatusCode::SEE_OTHER)
+            .header(
+                HeaderName::from_static("location"),
+                HeaderValue::from_str(location)
+                    .unwrap_or_else(|_| HeaderValue::from_static("/")),
+            )
+    }
+
+    /// Create a 308 Permanent Redirect (preserves method)
+    pub fn redirect_permanent_method(location: &str) -> Self {
+        Self::new()
+            .status(StatusCode::PERMANENT_REDIRECT)
+            .header(
+                HeaderName::from_static("location"),
+                HeaderValue::from_str(location)
+                    .unwrap_or_else(|_| HeaderValue::from_static("/")),
+            )
+    }
+
+    /// Create a file download response
+    pub fn download(filename: &str, content: impl Into<Bytes>, mime_type: &str) -> Self {
+        let content_disposition = format!("attachment; filename=\"{}\"", filename);
+        Self::new()
+            .content_type(mime_type)
+            .header_str("content-disposition", &content_disposition)
+            .body(content)
+    }
+
+    /// Create a 204 No Content response
+    pub fn no_content() -> Self {
+        Self::new()
+            .status(StatusCode::NO_CONTENT)
+    }
+
+    /// Create a 201 Created response
+    pub fn created(location: Option<&str>) -> Self {
+        let mut response = Self::new().status(StatusCode::CREATED);
+
+        if let Some(loc) = location {
+            response = response.header(
+                HeaderName::from_static("location"),
+                HeaderValue::from_str(loc)
+                    .unwrap_or_else(|_| HeaderValue::from_static("/")),
+            );
+        }
+
+        response
+    }
+
+    /// Create a 400 Bad Request response
+    pub fn bad_request(message: impl Into<String>) -> Self {
+        Self::text(message).status(StatusCode::BAD_REQUEST)
+    }
+
+    /// Create a 401 Unauthorized response
+    pub fn unauthorized() -> Self {
+        Self::text("Unauthorized").status(StatusCode::UNAUTHORIZED)
+    }
+
+    /// Create a 403 Forbidden response
+    pub fn forbidden() -> Self {
+        Self::text("Forbidden").status(StatusCode::FORBIDDEN)
+    }
+
     /// Get a reference to the response body
     pub fn get_body(&self) -> &Bytes {
         &self.body

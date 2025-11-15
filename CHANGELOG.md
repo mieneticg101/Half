@@ -5,6 +5,96 @@ All notable changes to the Half framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2025-11-15
+
+### Added - Phase 6: Advanced Features & Production Readiness
+
+#### Middleware Enhancements
+- **Timeout Middleware**: Automatic request timeout with configurable duration
+  - Default 30-second timeout (customizable)
+  - Custom timeout error messages
+  - Prevents hanging requests
+- **Recovery Middleware**: Comprehensive error and panic recovery
+  - Development mode: Detailed error messages for debugging
+  - Production mode: Generic error messages to prevent information leakage
+  - Catch panics and convert to 500 responses
+  - Configurable error logging
+- **Conditional Middleware**: Apply middleware based on conditions
+  - Path-based: Apply to specific paths or path prefixes
+  - Method-based: Apply to specific HTTP methods
+  - Header-based: Apply when headers are present
+  - Custom conditions: User-defined condition functions
+  - Nested conditional groups
+
+#### Response Helpers
+- **Redirect Variants**:
+  - `redirect_permanent()` - 301 Moved Permanently
+  - `redirect_temporary()` - 302 Found
+  - `redirect_see_other()` - 303 See Other
+  - `redirect_permanent_method()` - 308 Permanent Redirect
+- **Status Responses**:
+  - `no_content()` - 204 No Content
+  - `created(location)` - 201 Created with optional Location header
+  - `bad_request(message)` - 400 Bad Request
+  - `unauthorized()` - 401 Unauthorized
+  - `forbidden()` - 403 Forbidden
+- **File Downloads**:
+  - `download(filename, content, mime_type)` - File download with Content-Disposition header
+
+#### Router Enhancements
+- **Route Groups**: Organize routes with common prefixes
+  - Shared prefix for all routes in the group
+  - Nested groups for deeper organization
+  - Fluent API for route registration
+  - Example: `router.group("/api", |api| { ... })`
+- **Router Mounting**: Modular router composition
+  - Mount sub-routers at prefixes
+  - Combine multiple routers into one
+  - Example: `router.mount("/api", api_router)`
+- **RouteGroup Builder**:
+  - GET, POST, PUT, DELETE, PATCH methods
+  - Nested group support
+  - Automatic path prefixing
+
+#### CLI Enhancements
+- **Middleware Generator**: `half middleware <name>`
+  - Generates complete middleware boilerplate
+  - Includes struct, implementation, and tests
+  - Shows usage examples
+- **Controller Generator**: `half controller <name>`
+  - Generates RESTful controller with CRUD operations
+  - Index, show, create, update, destroy actions
+  - Includes route registration examples
+  - Follows best practices for REST APIs
+
+### Dependencies - Phase 6
+- Added `futures-util` 0.3 - For FutureExt trait (catch_unwind)
+
+### Performance - Phase 6
+- **Middleware**: Zero-cost abstractions for conditional middleware
+- **Route Groups**: Efficient path prefixing without runtime overhead
+- **Response Helpers**: Inline functions for optimal performance
+
+### Tests - Phase 6
+- **170 unit tests passing** (+9 new tests from v0.8.0)
+- Middleware tests: 9 passing (timeout, recovery, conditional)
+- Router tests: All existing tests passing
+- Response tests: All passing
+- 12 doctests passing
+- Zero compiler warnings
+- All clippy checks passing
+
+### Security Enhancements - Phase 6
+- **Recovery Middleware**: Prevents panic-based DoS attacks
+- **Timeout Middleware**: Prevents resource exhaustion from hanging requests
+- **Production Mode**: Hides internal error details in production
+
+### Developer Experience - Phase 6
+- **Code Generators**: Rapid scaffolding for middleware and controllers
+- **Route Groups**: Better code organization
+- **Modular Routers**: Cleaner architecture for large applications
+- **Response Helpers**: Less boilerplate for common responses
+
 ## [0.8.0] - 2025-11-15
 
 ### Added - Phase 5: Static Files, Templates & Body Parsing
