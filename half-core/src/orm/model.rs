@@ -86,6 +86,7 @@ pub enum Value {
 
 impl Value {
     /// Convert value to i64
+    #[inline]
     pub fn as_i64(&self) -> Option<i64> {
         match self {
             Value::Integer(i) => Some(*i),
@@ -94,6 +95,7 @@ impl Value {
     }
 
     /// Convert value to f64
+    #[inline]
     pub fn as_f64(&self) -> Option<f64> {
         match self {
             Value::Float(f) => Some(*f),
@@ -102,6 +104,7 @@ impl Value {
     }
 
     /// Convert value to String
+    #[inline]
     pub fn as_string(&self) -> Option<&str> {
         match self {
             Value::String(s) => Some(s),
@@ -110,6 +113,7 @@ impl Value {
     }
 
     /// Convert value to bool
+    #[inline]
     pub fn as_bool(&self) -> Option<bool> {
         match self {
             Value::Boolean(b) => Some(*b),
@@ -118,20 +122,34 @@ impl Value {
     }
 
     /// Check if value is null
+    #[inline]
     pub fn is_null(&self) -> bool {
         matches!(self, Value::Null)
     }
 
     /// Convert to SQL string representation
+    #[inline]
     pub fn to_sql_string(&self) -> String {
         match self {
-            Value::Null => "NULL".to_string(),
+            Value::Null => String::from("NULL"),
             Value::Integer(i) => i.to_string(),
             Value::Float(f) => f.to_string(),
-            Value::String(s) => format!("'{}'", s.replace('\'', "''")), // SQL escape
-            Value::Boolean(b) => if *b { "TRUE" } else { "FALSE" }.to_string(),
-            Value::Binary(_) => "BLOB".to_string(),
-            Value::Json(j) => format!("'{}'", j.replace('\'', "''")),
+            Value::String(s) => {
+                if s.contains('\'') {
+                    format!("'{}'", s.replace('\'', "''"))
+                } else {
+                    format!("'{}'", s)
+                }
+            }
+            Value::Boolean(b) => String::from(if *b { "TRUE" } else { "FALSE" }),
+            Value::Binary(_) => String::from("BLOB"),
+            Value::Json(j) => {
+                if j.contains('\'') {
+                    format!("'{}'", j.replace('\'', "''"))
+                } else {
+                    format!("'{}'", j)
+                }
+            }
         }
     }
 }

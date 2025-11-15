@@ -46,6 +46,7 @@ pub struct Query<T: Model> {
 
 impl<T: Model> Query<T> {
     /// Create a new query for a model
+    #[inline]
     pub fn new() -> Self {
         Self {
             query_builder: QueryBuilder::new().from(T::table_name()),
