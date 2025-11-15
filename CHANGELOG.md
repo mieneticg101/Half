@@ -5,6 +5,64 @@ All notable changes to the Half framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] - 2025-11-15
+
+### Added - Phase 9: Database & Request Enhancements
+
+#### Database Query Builder
+- **QueryBuilder**: Type-safe SQL query construction
+  - `QueryBuilder::new().select(&["id", "name"]).from("users")`
+  - SELECT queries with columns, WHERE, ORDER BY, LIMIT, OFFSET
+  - JOIN support (INNER, LEFT, RIGHT, FULL OUTER)
+  - INSERT, UPDATE, DELETE query builders
+  - Fluent API for query construction
+- **QueryParams**: Parameter binding helper
+  - Named parameter binding
+  - Type-safe parameter access
+  - HashMap-based storage
+- **Order & JoinType Enums**: Type-safe query options
+  - `Order::Asc`, `Order::Desc` for sorting
+  - `JoinType::Inner`, `JoinType::Left`, `JoinType::Right`, `JoinType::Full`
+
+#### Request Extensions
+- **IP Address Detection**: Comprehensive client IP extraction
+  - `client_ip()` - Extracts IP from X-Forwarded-For, X-Real-IP headers
+  - Supports Cloudflare (CF-Connecting-IP) and Akamai (True-Client-IP)
+  - Multi-IP handling (takes first IP from X-Forwarded-For)
+- **User Agent Helpers**:
+  - `user_agent()` - Get User-Agent header
+  - `is_mobile()` - Detect mobile devices (iOS, Android, Windows Phone)
+- **Content Negotiation**:
+  - `accepts()` - Parse Accept header into MIME types
+  - `accepts_type(content_type)` - Check if client accepts specific type
+  - Wildcard support (*/* and type/*)
+- **Request Context**:
+  - `referer()` - Get referring URL
+  - `host()` - Get Host header
+  - `is_https()` - Check HTTPS (URI scheme + X-Forwarded-Proto)
+  - `is_ajax()` - Detect AJAX/XHR requests (X-Requested-With)
+
+### Tests - Phase 9
+- **232 unit tests passing** (+24 new tests from v0.11.0)
+- Database query builder: 12 tests
+- Request extensions: 12 tests
+- 12 doctests passing
+- Zero compiler warnings
+- All clippy checks passing
+
+### Developer Experience - Phase 9
+- **Query Builder**: Build SQL queries safely without string concatenation
+- **IP Detection**: Proper client IP handling for proxied requests
+- **Content Negotiation**: Easy Accept header parsing for API versioning
+- **Mobile Detection**: Simple device detection for responsive content
+- **Type Safety**: Compile-time SQL query validation
+
+### Code Quality - Phase 9
+- Removed duplicate method implementations (client_ip, is_ajax)
+- Better header parsing for proxy scenarios
+- Comprehensive test coverage for edge cases
+- Clean API surface with intuitive method names
+
 ## [0.11.0] - 2025-11-15
 
 ### Added - Phase 8: Advanced Routing & Enhanced Request/Response
