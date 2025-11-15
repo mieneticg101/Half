@@ -57,6 +57,17 @@ futures-util = { workspace = true }
 # Caching (Phase 2)
 moka = { workspace = true }
 
+# Logging & Tracing (Phase 4)
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+uuid = { workspace = true }
+
+# Authentication (Phase 4)
+jsonwebtoken = { workspace = true }
+
+# File Upload (Phase 4)
+multer = { workspace = true }
+
 # Macros
 half-macros = { path = "../half-macros" }
 

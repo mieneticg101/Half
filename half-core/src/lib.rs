@@ -62,9 +62,11 @@
 //! ```
 
 // Public exports
+pub mod auth;
 pub mod error;
 pub mod handler;
 pub mod health;
+pub mod logging;
 pub mod metrics;
 pub mod middleware;
 pub mod request;
@@ -74,12 +76,16 @@ pub mod security;
 pub mod server;
 pub mod session;
 pub mod sse;
+pub mod trace;
+pub mod upload;
 pub mod websocket;
 
 // Re-export commonly used types
+pub use auth::{JwtAuth, BasicAuth, ApiKeyAuth, Claims, AuthError};
 pub use error::{Error, Result};
 pub use handler::Handler;
 pub use health::{HealthCheck, HealthResponse, HealthStatus, ComponentHealth};
+pub use logging::{LogConfig, RequestLogger, MetricsLogger};
 pub use metrics::{Metrics, Counter, Gauge, Histogram, Timer};
 pub use request::Request;
 pub use response::{Response, Cookie, SameSite};
@@ -87,6 +93,8 @@ pub use router::Router;
 pub use server::{Server, TlsConfig};
 pub use session::{SessionStore, Session, SessionConfig, SessionStats};
 pub use sse::{SseChannel, SseEvent, SseStream};
+pub use trace::{RequestId, TraceContext, TraceConfig, RequestTracer};
+pub use upload::{FileUpload, UploadConfig, UploadedFile, MultipartData, UploadError};
 pub use websocket::{WebSocket, WsMessage};
 
 // Re-export macros from half-macros
@@ -104,8 +112,10 @@ pub use security::{
 /// Prelude module for convenient imports
 pub mod prelude {
     pub use crate::{
+        auth::{JwtAuth, BasicAuth, ApiKeyAuth, Claims, AuthError},
         error::{Error, Result},
         handler::Handler,
+        logging::{LogConfig, RequestLogger, MetricsLogger},
         middleware::Middleware,
         request::Request,
         response::{Cookie, Response, SameSite},
@@ -118,6 +128,8 @@ pub mod prelude {
             Helmet, CspConfig, PermissionsPolicyConfig,
         },
         server::{Server, TlsConfig},
+        trace::{RequestId, TraceContext, TraceConfig, RequestTracer},
+        upload::{FileUpload, UploadConfig, UploadedFile, MultipartData, UploadError},
     };
 
     pub use half_macros::{delete, get, patch, post, put, route};

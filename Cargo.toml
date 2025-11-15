@@ -7,7 +7,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.6.0"
+version = "0.7.0"
 edition = "2024"
 authors = ["Half Framework Contributors"]
 license = "MIT OR Apache-2.0"
@@ -60,6 +60,17 @@ futures-util = "0.3"
 
 # Caching (Phase 2)
 moka = { version = "0.12", features = ["future"] }  # High-performance concurrent cache with TTL
+
+# Logging & Tracing (Phase 4)
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+uuid = { version = "1.11", features = ["v4", "fast-rng"] }
+
+# Authentication (Phase 4)
+jsonwebtoken = "9.3"
+
+# File Upload (Phase 4)
+multer = "3.1"
 
 # CLI
 clap = { version = "4.5", features = ["derive"] }

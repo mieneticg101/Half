@@ -5,6 +5,94 @@ All notable changes to the Half framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2025-11-15
+
+### Added - Phase 4: Authentication, Logging & File Upload
+
+#### Structured Logging & Tracing
+- **Tracing Integration**: Full integration with `tracing` crate for structured logging
+- **Log Levels**: Support for trace, debug, info, warn, error levels
+- **JSON Output**: Optional JSON formatting for log aggregation systems
+- **Request Logging**: Automatic HTTP request/response logging middleware
+- **Performance Metrics**: Integrated metrics logging (counters, gauges, histograms)
+- **Environment Filter**: Flexible log filtering using environment variables
+- **Span Events**: Trace request lifecycle with span start/close events
+- **Custom Configuration**: Builder pattern for log configuration
+
+#### Request Tracing & Correlation
+- **Request IDs**: Automatic request ID generation using UUID v4
+- **Trace Context**: Distributed tracing support with trace/span/parent IDs
+- **Header Propagation**: Extract and propagate trace headers (X-Request-ID, X-Trace-ID)
+- **Auto-Generation**: Automatically generate request IDs if not provided
+- **Request Timing**: Track request duration in milliseconds
+- **Configurable Headers**: Customize trace header names
+- **OpenTelemetry Compatible**: Designed for OpenTelemetry integration
+
+#### Authentication & Authorization
+- **JWT Authentication**:
+  - Token generation and validation
+  - Support for custom claims
+  - Multiple algorithms (HS256 default)
+  - Expiration time validation
+  - Issuer and audience validation
+  - Bearer token parsing
+
+- **Basic Authentication**:
+  - RFC 7617 compliant
+  - Base64 credential encoding/decoding
+  - In-memory user storage
+  - Password verification
+
+- **API Key Authentication**:
+  - Header-based API key validation
+  - Configurable header name (default: X-API-Key)
+  - User ID mapping
+  - Query parameter support ready
+
+#### File Upload & Multipart Forms
+- **Multipart Parsing**: Full multipart/form-data support using multer
+- **File Size Limits**: Per-file and total upload size limits
+- **Content Type Filtering**: Whitelist allowed MIME types
+- **Streaming Uploads**: Memory-efficient streaming file handling
+- **File Metadata**: Capture filename, content type, size
+- **Disk Storage**: Save uploaded files to disk
+- **File Type Detection**: Helper methods for images, documents, etc.
+- **Form Fields**: Parse regular form fields alongside files
+- **Error Handling**: Comprehensive error messages for validation failures
+
+### Dependencies - Phase 4
+
+- Added `tracing` 0.1 - Structured logging and tracing
+- Added `tracing-subscriber` 0.3 - Log subscriber implementations
+- Added `uuid` 1.11 - UUID generation for request IDs
+- Added `jsonwebtoken` 9.3 - JWT token handling
+- Added `multer` 3.1 - Multipart form parsing
+
+### Performance - Phase 4
+
+- **Logging**: Zero-cost abstractions with compile-time filtering
+- **Tracing**: Minimal overhead with span instrumentation
+- **JWT**: Fast token validation using HMAC-SHA256
+- **File Upload**: Streaming prevents memory bloat for large files
+
+### Tests - Phase 4
+
+- **125 total tests passing** (+35 new tests from v0.6.0)
+- Authentication tests: 10 passing (JWT, Basic Auth, API Key)
+- Logging tests: 5 passing
+- Tracing tests: 11 passing
+- Upload tests: 9 passing
+- Zero compiler warnings
+- All clippy checks passing
+- All doctests passing
+
+### Security Enhancements - Phase 4
+
+- **Secure JWT**: HMAC-SHA256 signing, expiration validation
+- **Password Security**: Base64 encoding for basic auth (recommend bcrypt for production)
+- **File Upload Safety**: Size limits, content type validation, streaming to prevent DoS
+- **Request Tracking**: Full request traceability for security auditing
+
 ## [0.6.0] - 2025-11-15
 
 ### Added - Phase 3: Health Checks, Metrics & Sessions
