@@ -4,10 +4,10 @@
 //! middleware, and method-based routing.
 
 use crate::{
+    Request, Response,
     error::{Error, Result},
     handler::{Handler, HandlerWrapper},
     middleware::{BoxedMiddleware, Middleware},
-    Request, Response,
 };
 use hyper::Method;
 use std::collections::HashMap;
@@ -134,10 +134,14 @@ impl Router {
     /// assert_eq!(url, "/users/123");
     /// ```
     pub fn url(&self, name: &str, params: &[(&str, &str)]) -> Result<String> {
-        let route_index = self.named_routes.get(name)
+        let route_index = self
+            .named_routes
+            .get(name)
             .ok_or_else(|| Error::Custom(format!("Route '{}' not found", name)))?;
 
-        let route = self.routes.get(*route_index)
+        let route = self
+            .routes
+            .get(*route_index)
             .ok_or_else(|| Error::InternalError("Invalid route index".to_string()))?;
 
         // Build URL by replacing parameters in the path
@@ -150,10 +154,12 @@ impl Router {
         for part in parts {
             if let Some(param_name) = part.strip_prefix(':') {
                 // This is a parameter
-                let value = params_map.get(param_name)
-                    .ok_or_else(|| Error::BadRequest(
-                        format!("Missing parameter '{}' for route '{}'", param_name, name)
-                    ))?;
+                let value = params_map.get(param_name).ok_or_else(|| {
+                    Error::BadRequest(format!(
+                        "Missing parameter '{}' for route '{}'",
+                        param_name, name
+                    ))
+                })?;
                 result_parts.push(value.to_string());
             } else {
                 result_parts.push(part.to_string());
@@ -607,9 +613,13 @@ mod tests {
             Response::text("Hello")
         }
 
-        router.get("/users/:user_id/posts/:post_id", handler).name("user.post");
+        router
+            .get("/users/:user_id/posts/:post_id", handler)
+            .name("user.post");
 
-        let url = router.url("user.post", &[("user_id", "42"), ("post_id", "100")]).unwrap();
+        let url = router
+            .url("user.post", &[("user_id", "42"), ("post_id", "100")])
+            .unwrap();
         assert_eq!(url, "/users/42/posts/100");
     }
 
@@ -660,7 +670,8 @@ mod tests {
             Response::text("Hello")
         }
 
-        router.get("/users/:id", handler)
+        router
+            .get("/users/:id", handler)
             .name("user.show")
             .middleware(Logger);
 

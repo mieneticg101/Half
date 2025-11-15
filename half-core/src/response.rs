@@ -4,11 +4,11 @@
 
 use crate::error::Error;
 use bytes::Bytes;
-use hyper::{
-    header::{HeaderMap, HeaderName, HeaderValue, CONTENT_TYPE, SET_COOKIE},
-    StatusCode,
-};
 use http_body_util::Full;
+use hyper::{
+    StatusCode,
+    header::{CONTENT_TYPE, HeaderMap, HeaderName, HeaderValue, SET_COOKIE},
+};
 use serde::Serialize;
 
 /// HTTP Response builder
@@ -104,9 +104,8 @@ impl Response {
     pub fn content_type(self, content_type: &str) -> Self {
         self.header(
             CONTENT_TYPE,
-            HeaderValue::from_str(content_type).unwrap_or_else(|_| {
-                HeaderValue::from_static("text/plain")
-            }),
+            HeaderValue::from_str(content_type)
+                .unwrap_or_else(|_| HeaderValue::from_static("text/plain")),
         )
     }
 
@@ -167,13 +166,10 @@ impl Response {
             StatusCode::FOUND
         };
 
-        Self::new()
-            .status(status)
-            .header(
-                HeaderName::from_static("location"),
-                HeaderValue::from_str(location)
-                    .unwrap_or_else(|_| HeaderValue::from_static("/")),
-            )
+        Self::new().status(status).header(
+            HeaderName::from_static("location"),
+            HeaderValue::from_str(location).unwrap_or_else(|_| HeaderValue::from_static("/")),
+        )
     }
 
     /// Create a 404 Not Found response
@@ -192,8 +188,8 @@ impl Response {
     /// In production, server errors (5xx) only show generic messages to prevent
     /// information leakage. Client errors (4xx) show the actual error message.
     pub fn from_error(error: &Error) -> Self {
-        let status = StatusCode::from_u16(error.status_code())
-            .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
+        let status =
+            StatusCode::from_u16(error.status_code()).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
 
         // Sanitize error message for production
         let error_message = if error.is_server_error() {
@@ -222,46 +218,34 @@ impl Response {
 
     /// Create a 301 Moved Permanently redirect
     pub fn redirect_permanent(location: &str) -> Self {
-        Self::new()
-            .status(StatusCode::MOVED_PERMANENTLY)
-            .header(
-                HeaderName::from_static("location"),
-                HeaderValue::from_str(location)
-                    .unwrap_or_else(|_| HeaderValue::from_static("/")),
-            )
+        Self::new().status(StatusCode::MOVED_PERMANENTLY).header(
+            HeaderName::from_static("location"),
+            HeaderValue::from_str(location).unwrap_or_else(|_| HeaderValue::from_static("/")),
+        )
     }
 
     /// Create a 302 Found redirect (temporary)
     pub fn redirect_temporary(location: &str) -> Self {
-        Self::new()
-            .status(StatusCode::FOUND)
-            .header(
-                HeaderName::from_static("location"),
-                HeaderValue::from_str(location)
-                    .unwrap_or_else(|_| HeaderValue::from_static("/")),
-            )
+        Self::new().status(StatusCode::FOUND).header(
+            HeaderName::from_static("location"),
+            HeaderValue::from_str(location).unwrap_or_else(|_| HeaderValue::from_static("/")),
+        )
     }
 
     /// Create a 307 Temporary Redirect (preserves method)
     pub fn redirect_see_other(location: &str) -> Self {
-        Self::new()
-            .status(StatusCode::SEE_OTHER)
-            .header(
-                HeaderName::from_static("location"),
-                HeaderValue::from_str(location)
-                    .unwrap_or_else(|_| HeaderValue::from_static("/")),
-            )
+        Self::new().status(StatusCode::SEE_OTHER).header(
+            HeaderName::from_static("location"),
+            HeaderValue::from_str(location).unwrap_or_else(|_| HeaderValue::from_static("/")),
+        )
     }
 
     /// Create a 308 Permanent Redirect (preserves method)
     pub fn redirect_permanent_method(location: &str) -> Self {
-        Self::new()
-            .status(StatusCode::PERMANENT_REDIRECT)
-            .header(
-                HeaderName::from_static("location"),
-                HeaderValue::from_str(location)
-                    .unwrap_or_else(|_| HeaderValue::from_static("/")),
-            )
+        Self::new().status(StatusCode::PERMANENT_REDIRECT).header(
+            HeaderName::from_static("location"),
+            HeaderValue::from_str(location).unwrap_or_else(|_| HeaderValue::from_static("/")),
+        )
     }
 
     /// Create a file download response
@@ -275,8 +259,7 @@ impl Response {
 
     /// Create a 204 No Content response
     pub fn no_content() -> Self {
-        Self::new()
-            .status(StatusCode::NO_CONTENT)
+        Self::new().status(StatusCode::NO_CONTENT)
     }
 
     /// Create a 201 Created response
@@ -286,8 +269,7 @@ impl Response {
         if let Some(loc) = location {
             response = response.header(
                 HeaderName::from_static("location"),
-                HeaderValue::from_str(loc)
-                    .unwrap_or_else(|_| HeaderValue::from_static("/")),
+                HeaderValue::from_str(loc).unwrap_or_else(|_| HeaderValue::from_static("/")),
             );
         }
 
@@ -319,7 +301,12 @@ impl Response {
     /// ```ignore
     /// Response::attachment("image.png", image_bytes, "image/png", true)
     /// ```
-    pub fn attachment(filename: &str, content: impl Into<Bytes>, mime_type: &str, inline: bool) -> Self {
+    pub fn attachment(
+        filename: &str,
+        content: impl Into<Bytes>,
+        mime_type: &str,
+        inline: bool,
+    ) -> Self {
         let disposition = if inline {
             format!("inline; filename=\"{}\"", filename)
         } else {
@@ -361,8 +348,7 @@ impl Response {
     /// Indicates that the request could not be completed due to a conflict
     /// with the current state of the resource.
     pub fn conflict(message: impl Into<String>) -> Self {
-        Self::text(message)
-            .status(StatusCode::CONFLICT)
+        Self::text(message).status(StatusCode::CONFLICT)
     }
 
     /// Create a 422 Unprocessable Entity response
@@ -370,8 +356,7 @@ impl Response {
     /// Indicates that the server understands the content type of the request entity,
     /// but was unable to process the contained instructions (e.g., validation errors).
     pub fn unprocessable(message: impl Into<String>) -> Self {
-        Self::text(message)
-            .status(StatusCode::UNPROCESSABLE_ENTITY)
+        Self::text(message).status(StatusCode::UNPROCESSABLE_ENTITY)
     }
 
     /// Create a 429 Too Many Requests response
@@ -381,8 +366,7 @@ impl Response {
     /// # Arguments
     /// * `retry_after` - Optional number of seconds to wait before retrying
     pub fn too_many_requests(retry_after: Option<u32>) -> Self {
-        let mut response = Self::text("Too Many Requests")
-            .status(StatusCode::TOO_MANY_REQUESTS);
+        let mut response = Self::text("Too Many Requests").status(StatusCode::TOO_MANY_REQUESTS);
 
         if let Some(seconds) = retry_after {
             response = response.header_str("retry-after", &seconds.to_string());
@@ -448,8 +432,8 @@ impl Cookie {
             path: None,
             domain: None,
             max_age: None,
-            secure: true, // Secure by default
-            http_only: true, // HttpOnly by default for security
+            secure: true,                      // Secure by default
+            http_only: true,                   // HttpOnly by default for security
             same_site: Some(SameSite::Strict), // Strict by default for CSRF protection
         }
     }
@@ -565,9 +549,7 @@ mod tests {
 
     #[test]
     fn test_cookie_to_string() {
-        let cookie = Cookie::new("session", "abc123")
-            .path("/")
-            .max_age(3600);
+        let cookie = Cookie::new("session", "abc123").path("/").max_age(3600);
 
         let cookie_str = cookie.to_string();
         assert!(cookie_str.contains("session=abc123"));
@@ -598,7 +580,8 @@ mod tests {
 
     #[test]
     fn test_attachment_inline() {
-        let response = Response::attachment("test.pdf", b"PDF content".to_vec(), "application/pdf", true);
+        let response =
+            Response::attachment("test.pdf", b"PDF content".to_vec(), "application/pdf", true);
 
         assert_eq!(response.status, StatusCode::OK);
         let disposition = response.headers.get("content-disposition").unwrap();
@@ -608,7 +591,12 @@ mod tests {
 
     #[test]
     fn test_attachment_download() {
-        let response = Response::attachment("test.pdf", b"PDF content".to_vec(), "application/pdf", false);
+        let response = Response::attachment(
+            "test.pdf",
+            b"PDF content".to_vec(),
+            "application/pdf",
+            false,
+        );
 
         let disposition = response.headers.get("content-disposition").unwrap();
         assert!(disposition.to_str().unwrap().contains("attachment"));

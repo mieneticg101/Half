@@ -1,10 +1,10 @@
 use std::time::Instant;
 use tracing::{Level, Span};
 use tracing_subscriber::{
+    EnvFilter,
     fmt::{self, format::FmtSpan},
     layer::SubscriberExt,
     util::SubscriberInitExt,
-    EnvFilter,
 };
 
 /// Logging configuration
@@ -73,8 +73,7 @@ impl LogConfig {
     /// Initialize the global tracing subscriber
     pub fn init(&self) -> Result<(), String> {
         let filter = if let Some(ref env_filter) = self.env_filter {
-            EnvFilter::try_new(env_filter)
-                .map_err(|e| format!("Invalid env filter: {}", e))?
+            EnvFilter::try_new(env_filter).map_err(|e| format!("Invalid env filter: {}", e))?
         } else {
             EnvFilter::try_from_default_env()
                 .unwrap_or_else(|_| EnvFilter::new(self.level.as_str()))
@@ -83,7 +82,11 @@ impl LogConfig {
         if self.json {
             tracing_subscriber::registry()
                 .with(filter)
-                .with(fmt::layer().json().with_span_events(FmtSpan::NEW | FmtSpan::CLOSE))
+                .with(
+                    fmt::layer()
+                        .json()
+                        .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE),
+                )
                 .try_init()
                 .map_err(|e| format!("Failed to initialize logger: {}", e))?;
         } else {
@@ -144,13 +147,7 @@ impl RequestLogger {
     }
 
     /// Log request completion
-    pub fn log_response(
-        &self,
-        span: Span,
-        start: Instant,
-        status: u16,
-        size: usize,
-    ) {
+    pub fn log_response(&self, span: Span, start: Instant, status: u16, size: usize) {
         if !self.config.log_requests {
             return;
         }

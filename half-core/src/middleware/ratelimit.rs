@@ -3,14 +3,14 @@
 //! Provides flexible rate limiting with multiple strategies.
 
 use crate::{
+    Request, Response,
     error::Result,
     middleware::{Middleware, Next},
-    Request, Response,
 };
 use governor::{
+    Quota, RateLimiter as GovernorRateLimiter,
     clock::DefaultClock,
     state::{InMemoryState, NotKeyed},
-    Quota, RateLimiter as GovernorRateLimiter,
 };
 use std::future::Future;
 use std::num::NonZeroU32;
@@ -30,7 +30,10 @@ pub struct RateLimitConfig {
 impl RateLimitConfig {
     /// Create a new rate limit configuration
     pub fn new(max_requests: u32, window: Duration) -> Self {
-        Self { max_requests, window }
+        Self {
+            max_requests,
+            window,
+        }
     }
 
     /// Per second rate limit
@@ -98,7 +101,9 @@ impl RateLimiter {
 
     /// Check if a path is exempt from rate limiting
     fn is_exempt(&self, path: &str) -> bool {
-        self.exempt_paths.iter().any(|exempt| path.starts_with(exempt))
+        self.exempt_paths
+            .iter()
+            .any(|exempt| path.starts_with(exempt))
     }
 }
 

@@ -54,7 +54,7 @@ impl TestClient {
                     status: StatusCode::BAD_REQUEST,
                     headers: HashMap::new(),
                     body: b"Invalid request".to_vec(),
-                }
+                };
             }
         };
 
@@ -71,12 +71,7 @@ impl TestClient {
             headers: response
                 .get_headers()
                 .iter()
-                .map(|(k, v)| {
-                    (
-                        k.as_str().to_string(),
-                        v.to_str().unwrap_or("").to_string(),
-                    )
-                })
+                .map(|(k, v)| (k.as_str().to_string(), v.to_str().unwrap_or("").to_string()))
                 .collect(),
             body: response.get_body().to_vec(),
         }

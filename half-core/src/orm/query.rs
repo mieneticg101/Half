@@ -3,7 +3,7 @@
 //! Provides a fluent API for building and executing database queries
 //! with compile-time type safety.
 
-use crate::database::{QueryBuilder, Order as SqlOrder};
+use crate::database::{Order as SqlOrder, QueryBuilder};
 use crate::orm::connection::{Connection, ConnectionError};
 use crate::orm::model::{Model, Value};
 use std::collections::HashMap;
@@ -195,9 +195,7 @@ impl<T: Model> Query<T> {
         let results = executor.query(&sql, &self.params)?;
 
         if let Some(row) = results.into_iter().next() {
-            T::from_values(row)
-                .map(Some)
-                .map_err(ConnectionError::from)
+            T::from_values(row).map(Some).map_err(ConnectionError::from)
         } else {
             Ok(None)
         }
@@ -321,9 +319,7 @@ impl<T: Model> Insert<T> {
 
     /// Execute the insert
     pub fn execute(self, executor: &mut dyn QueryExecutor) -> Result<u64, ConnectionError> {
-        let columns: Vec<(&str, &str)> = self
-            .values.keys().map(|k| (k.as_str(), "?"))
-            .collect();
+        let columns: Vec<(&str, &str)> = self.values.keys().map(|k| (k.as_str(), "?")).collect();
 
         let sql = QueryBuilder::insert(T::table_name(), &columns);
         let params: Vec<Value> = self.values.into_values().collect();
@@ -370,9 +366,7 @@ impl<T: Model> Update<T> {
 
     /// Execute the update
     pub fn execute(self, executor: &mut dyn QueryExecutor) -> Result<u64, ConnectionError> {
-        let updates: Vec<(&str, &str)> = self
-            .values.keys().map(|k| (k.as_str(), "?"))
-            .collect();
+        let updates: Vec<(&str, &str)> = self.values.keys().map(|k| (k.as_str(), "?")).collect();
 
         // Build WHERE clause
         let where_parts: Vec<String> = self.conditions.iter().map(|c| c.to_sql()).collect();
@@ -525,7 +519,10 @@ mod tests {
         let cond = Condition::GreaterThan("age".to_string(), Value::Integer(18));
         assert_eq!(cond.to_sql(), "age > ?");
 
-        let cond = Condition::Like("email".to_string(), Value::String("%@example.com".to_string()));
+        let cond = Condition::Like(
+            "email".to_string(),
+            Value::String("%@example.com".to_string()),
+        );
         assert_eq!(cond.to_sql(), "email LIKE ?");
 
         let cond = Condition::IsNull("deleted_at".to_string());
@@ -543,9 +540,7 @@ mod tests {
 
     #[test]
     fn test_update_builder() {
-        let update: Update<TestUser> = Update::new()
-            .set("name", "Jane Doe")
-            .where_eq("id", 1i64);
+        let update: Update<TestUser> = Update::new().set("name", "Jane Doe").where_eq("id", 1i64);
 
         assert_eq!(update.values.len(), 1);
         assert_eq!(update.conditions.len(), 1);
@@ -560,9 +555,7 @@ mod tests {
 
     #[test]
     fn test_query_where_conditions() {
-        let query: Query<TestUser> = Query::new()
-            .where_eq("name", "John")
-            .where_gt("age", 18i64);
+        let query: Query<TestUser> = Query::new().where_eq("name", "John").where_gt("age", 18i64);
 
         assert_eq!(query.conditions.len(), 2);
     }

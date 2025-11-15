@@ -7,15 +7,14 @@
 //!
 //! Run with: cargo run --example database_basic
 
-use half_core::orm::{DatabaseConfig, ConnectionPool};
+use half_core::orm::{ConnectionPool, DatabaseConfig};
 
 fn main() {
     println!("=== Half Framework - Database Connection Example ===\n");
 
     // Example 1: SQLite (easiest for development)
     println!("1. SQLite Connection:");
-    let config = DatabaseConfig::new("sqlite://./example.db")
-        .max_connections(5);
+    let config = DatabaseConfig::new("sqlite://./example.db").max_connections(5);
     let pool = ConnectionPool::new(config);
 
     println!("   Database Type: {:?}", pool.database_type());
@@ -55,16 +54,25 @@ fn main() {
     println!("4. Database Feature Support:");
     println!();
     println!("   PostgreSQL:");
-    println!("     - RETURNING clause: {}", pg_dialect.supports_returning());
+    println!(
+        "     - RETURNING clause: {}",
+        pg_dialect.supports_returning()
+    );
     println!("     - UPSERT: {}", pg_dialect.supports_upsert());
     println!();
     println!("   MySQL:");
-    println!("     - RETURNING clause: {}", mysql_dialect.supports_returning());
+    println!(
+        "     - RETURNING clause: {}",
+        mysql_dialect.supports_returning()
+    );
     println!("     - UPSERT: {}", mysql_dialect.supports_upsert());
     println!();
     println!("   SQLite:");
     let sqlite_dialect = pool.driver().dialect();
-    println!("     - RETURNING clause: {}", sqlite_dialect.supports_returning());
+    println!(
+        "     - RETURNING clause: {}",
+        sqlite_dialect.supports_returning()
+    );
     println!("     - UPSERT: {}", sqlite_dialect.supports_upsert());
 
     println!("\n=== Next Steps ===");

@@ -3,9 +3,9 @@
 //! Provides utilities for preventing XSS attacks through proper output encoding.
 
 use crate::{
-    middleware::{Middleware, Next},
     Request, Response,
     error::Result,
+    middleware::{Middleware, Next},
 };
 use std::future::Future;
 use std::pin::Pin;
@@ -151,7 +151,10 @@ mod tests {
 
     #[test]
     fn test_escape_js() {
-        assert_eq!(escape_js("'; alert('XSS'); '"), "\\'; alert(\\'XSS\\'); \\'");
+        assert_eq!(
+            escape_js("'; alert('XSS'); '"),
+            "\\'; alert(\\'XSS\\'); \\'"
+        );
         assert_eq!(escape_js("</script>"), "\\x3C/script\\x3E");
     }
 

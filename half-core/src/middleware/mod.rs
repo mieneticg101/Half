@@ -18,13 +18,14 @@ use std::pin::Pin;
 pub use cache::{Cache, CacheConfig, CacheStats};
 pub use compression::{Compression, CompressionAlgorithm, CompressionLevel};
 pub use conditional::Conditional;
-pub use performance::{PerformanceMonitor, PerformanceConfig, PerformanceStats};
-pub use ratelimit::{RateLimiter, RateLimitConfig};
+pub use performance::{PerformanceConfig, PerformanceMonitor, PerformanceStats};
+pub use ratelimit::{RateLimitConfig, RateLimiter};
 pub use recovery::{Recovery, RecoveryConfig, RecoveryMode};
 pub use timeout::{Timeout, TimeoutConfig};
 
 /// Next middleware in the chain
-pub type Next = Box<dyn FnOnce(Request) -> Pin<Box<dyn Future<Output = Result<Response>> + Send>> + Send>;
+pub type Next =
+    Box<dyn FnOnce(Request) -> Pin<Box<dyn Future<Output = Result<Response>> + Send>> + Send>;
 
 /// Middleware trait
 ///
@@ -70,7 +71,10 @@ impl Middleware for Logger {
                     println!("← [{}] {} - OK ({:?})", method, path, duration);
                 }
                 Err(error) => {
-                    println!("← [{}] {} - Error: {} ({:?})", method, path, error, duration);
+                    println!(
+                        "← [{}] {} - Error: {} ({:?})",
+                        method, path, error, duration
+                    );
                 }
             }
 
@@ -103,10 +107,7 @@ impl Cors {
                 "PATCH".to_string(),
                 "OPTIONS".to_string(),
             ],
-            allow_headers: vec![
-                "Content-Type".to_string(),
-                "Authorization".to_string(),
-            ],
+            allow_headers: vec!["Content-Type".to_string(), "Authorization".to_string()],
             allow_credentials: false,
             max_age: Some(3600),
         }

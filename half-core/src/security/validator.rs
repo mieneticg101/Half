@@ -15,9 +15,8 @@ impl Validator {
     ///
     /// Basic email validation using a simple regex pattern.
     pub fn email(value: &str) -> Result<()> {
-        let email_regex = regex::Regex::new(
-            r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-        ).unwrap();
+        let email_regex =
+            regex::Regex::new(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").unwrap();
 
         if email_regex.is_match(value) {
             Ok(())
@@ -88,7 +87,7 @@ impl Validator {
             Ok(())
         } else {
             Err(Error::ValidationError(
-                "Value must be alphanumeric".to_string()
+                "Value must be alphanumeric".to_string(),
             ))
         }
     }
@@ -99,15 +98,15 @@ impl Validator {
     /// This is a basic check. Always use parameterized queries!
     pub fn no_sql_injection(value: &str) -> Result<()> {
         let dangerous_patterns = [
-            "';", "--", "/*", "*/", "xp_", "sp_", "UNION", "SELECT", "DROP", "DELETE",
-            "INSERT", "UPDATE", "EXEC", "EXECUTE",
+            "';", "--", "/*", "*/", "xp_", "sp_", "UNION", "SELECT", "DROP", "DELETE", "INSERT",
+            "UPDATE", "EXEC", "EXECUTE",
         ];
 
         let upper_value = value.to_uppercase();
         for pattern in &dangerous_patterns {
             if upper_value.contains(pattern) {
                 return Err(Error::ValidationError(
-                    "Potentially dangerous SQL pattern detected".to_string()
+                    "Potentially dangerous SQL pattern detected".to_string(),
                 ));
             }
         }
@@ -121,7 +120,7 @@ impl Validator {
     pub fn no_path_traversal(value: &str) -> Result<()> {
         if value.contains("..") || value.contains("./") || value.contains("\\") {
             Err(Error::ValidationError(
-                "Path traversal attempt detected".to_string()
+                "Path traversal attempt detected".to_string(),
             ))
         } else {
             Ok(())
@@ -134,7 +133,9 @@ impl Validator {
     pub fn sanitize(value: &str) -> String {
         value
             .chars()
-            .filter(|c| c.is_alphanumeric() || c.is_whitespace() || matches!(c, '-' | '_' | '@' | '.'))
+            .filter(|c| {
+                c.is_alphanumeric() || c.is_whitespace() || matches!(c, '-' | '_' | '@' | '.')
+            })
             .collect()
     }
 }
@@ -222,7 +223,12 @@ impl ValidationRules {
     /// ValidationRules::new()
     ///     .custom("username", |val| val.len() >= 3, "Username must be at least 3 characters")
     /// ```
-    pub fn custom<F>(mut self, field: impl Into<String>, validator: F, message: impl Into<String>) -> Self
+    pub fn custom<F>(
+        mut self,
+        field: impl Into<String>,
+        validator: F,
+        message: impl Into<String>,
+    ) -> Self
     where
         F: Fn(&str) -> bool + Send + Sync + 'static,
     {
@@ -250,8 +256,14 @@ impl ValidationRules {
                     Rule::Required => Validator::required(value)
                         .map_err(|_| format!("Field '{}' is required", field)),
 
-                    Rule::Length { min, max } => Validator::length(value, *min, *max)
-                        .map_err(|_| format!("Field '{}' must be between {} and {} characters", field, min, max)),
+                    Rule::Length { min, max } => {
+                        Validator::length(value, *min, *max).map_err(|_| {
+                            format!(
+                                "Field '{}' must be between {} and {} characters",
+                                field, min, max
+                            )
+                        })
+                    }
 
                     Rule::Email => Validator::email(value)
                         .map_err(|_| format!("Field '{}' must be a valid email address", field)),
@@ -259,8 +271,9 @@ impl ValidationRules {
                     Rule::Numeric => Validator::numeric(value)
                         .map_err(|_| format!("Field '{}' must contain only numbers", field)),
 
-                    Rule::Alphanumeric => Validator::alphanumeric(value)
-                        .map_err(|_| format!("Field '{}' must contain only letters and numbers", field)),
+                    Rule::Alphanumeric => Validator::alphanumeric(value).map_err(|_| {
+                        format!("Field '{}' must contain only letters and numbers", field)
+                    }),
 
                     Rule::Min { value: min_val } => {
                         if let Ok(num) = value.parse::<i64>() {
@@ -318,12 +331,19 @@ impl Default for ValidationRules {
 /// Validation rule types
 enum Rule {
     Required,
-    Length { min: usize, max: usize },
+    Length {
+        min: usize,
+        max: usize,
+    },
     Email,
     Numeric,
     Alphanumeric,
-    Min { value: i64 },
-    Max { value: i64 },
+    Min {
+        value: i64,
+    },
+    Max {
+        value: i64,
+    },
     Custom {
         validator: Box<dyn Fn(&str) -> bool + Send + Sync>,
         message: String,
@@ -453,9 +473,7 @@ mod tests {
 
     #[test]
     fn test_validation_rules_numeric() {
-        let rules = ValidationRules::new()
-            .required("age")
-            .numeric("age");
+        let rules = ValidationRules::new().required("age").numeric("age");
 
         let mut values = HashMap::new();
         values.insert("age".to_string(), "25".to_string());
@@ -486,9 +504,7 @@ mod tests {
 
     #[test]
     fn test_validation_rules_alphanumeric() {
-        let rules = ValidationRules::new()
-            .required("code")
-            .alphanumeric("code");
+        let rules = ValidationRules::new().required("code").alphanumeric("code");
 
         let mut values = HashMap::new();
         values.insert("code".to_string(), "ABC123".to_string());
@@ -500,9 +516,11 @@ mod tests {
 
     #[test]
     fn test_validation_rules_custom() {
-        let rules = ValidationRules::new()
-            .required("username")
-            .custom("username", |val| !val.contains("admin"), "Username cannot contain 'admin'");
+        let rules = ValidationRules::new().required("username").custom(
+            "username",
+            |val| !val.contains("admin"),
+            "Username cannot contain 'admin'",
+        );
 
         let mut values = HashMap::new();
         values.insert("username".to_string(), "johndoe".to_string());
@@ -514,9 +532,7 @@ mod tests {
 
     #[test]
     fn test_validation_error_messages() {
-        let rules = ValidationRules::new()
-            .required("email")
-            .email("email");
+        let rules = ValidationRules::new().required("email").email("email");
 
         let mut values = HashMap::new();
         values.insert("email".to_string(), "invalid-email".to_string());

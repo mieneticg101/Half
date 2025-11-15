@@ -2,7 +2,7 @@
 //!
 //! Provides a high-performance HTTP server built on Hyper and Tokio with HTTP/2 and TLS 1.3 support.
 
-use crate::{error::Result, router::Router, Request, Response};
+use crate::{Request, Response, error::Result, router::Router};
 use hyper::server::conn::{http1, http2};
 use hyper::service::service_fn;
 use hyper_util::rt::{TokioExecutor, TokioIo};
@@ -43,30 +43,40 @@ impl TlsConfig {
     /// Load TLS configuration from files
     fn load(&self) -> Result<Arc<RustlsServerConfig>> {
         // Load certificate chain
-        let cert_file = File::open(&self.cert_path)
-            .map_err(|e| crate::error::Error::InternalError(format!("Failed to open certificate: {}", e)))?;
+        let cert_file = File::open(&self.cert_path).map_err(|e| {
+            crate::error::Error::InternalError(format!("Failed to open certificate: {}", e))
+        })?;
         let mut cert_reader = BufReader::new(cert_file);
         let cert_chain: Vec<_> = certs(&mut cert_reader)
             .collect::<std::result::Result<Vec<_>, _>>()
-            .map_err(|e| crate::error::Error::InternalError(format!("Failed to parse certificate: {}", e)))?;
+            .map_err(|e| {
+                crate::error::Error::InternalError(format!("Failed to parse certificate: {}", e))
+            })?;
 
         // Load private key
-        let key_file = File::open(&self.key_path)
-            .map_err(|e| crate::error::Error::InternalError(format!("Failed to open private key: {}", e)))?;
+        let key_file = File::open(&self.key_path).map_err(|e| {
+            crate::error::Error::InternalError(format!("Failed to open private key: {}", e))
+        })?;
         let mut key_reader = BufReader::new(key_file);
         let mut keys = pkcs8_private_keys(&mut key_reader)
             .collect::<std::result::Result<Vec<_>, _>>()
-            .map_err(|e| crate::error::Error::InternalError(format!("Failed to parse private key: {}", e)))?;
+            .map_err(|e| {
+                crate::error::Error::InternalError(format!("Failed to parse private key: {}", e))
+            })?;
 
         if keys.is_empty() {
-            return Err(crate::error::Error::InternalError("No private keys found".to_string()));
+            return Err(crate::error::Error::InternalError(
+                "No private keys found".to_string(),
+            ));
         }
 
         // Configure TLS with modern, secure settings
         let config = RustlsServerConfig::builder()
             .with_no_client_auth()
             .with_single_cert(cert_chain, keys.remove(0).into())
-            .map_err(|e| crate::error::Error::InternalError(format!("Failed to create TLS config: {}", e)))?;
+            .map_err(|e| {
+                crate::error::Error::InternalError(format!("Failed to create TLS config: {}", e))
+            })?;
 
         Ok(Arc::new(config))
     }
@@ -208,9 +218,20 @@ impl Server {
     }
 
     /// Run HTTP server (no TLS)
-    async fn run_http(self, listener: TcpListener, shutdown_tx: broadcast::Sender<()>) -> Result<()> {
-        let protocol = if self.enable_http2 { "HTTP/2" } else { "HTTP/1.1" };
-        println!("🚀 Half server listening on http://{} ({})", self.addr, protocol);
+    async fn run_http(
+        self,
+        listener: TcpListener,
+        shutdown_tx: broadcast::Sender<()>,
+    ) -> Result<()> {
+        let protocol = if self.enable_http2 {
+            "HTTP/2"
+        } else {
+            "HTTP/1.1"
+        };
+        println!(
+            "🚀 Half server listening on http://{} ({})",
+            self.addr, protocol
+        );
         println!("💡 Press Ctrl+C for graceful shutdown");
 
         let enable_http2 = self.enable_http2;
@@ -263,9 +284,21 @@ impl Server {
     }
 
     /// Run HTTPS server with TLS 1.3
-    async fn run_tls(self, listener: TcpListener, tls_config: TlsConfig, shutdown_tx: broadcast::Sender<()>) -> Result<()> {
-        let protocol = if self.enable_http2 { "TLS 1.3 + HTTP/2" } else { "TLS 1.3 + HTTP/1.1" };
-        println!("🔒 Half server listening on https://{} ({})", self.addr, protocol);
+    async fn run_tls(
+        self,
+        listener: TcpListener,
+        tls_config: TlsConfig,
+        shutdown_tx: broadcast::Sender<()>,
+    ) -> Result<()> {
+        let protocol = if self.enable_http2 {
+            "TLS 1.3 + HTTP/2"
+        } else {
+            "TLS 1.3 + HTTP/1.1"
+        };
+        println!(
+            "🔒 Half server listening on https://{} ({})",
+            self.addr, protocol
+        );
         println!("💡 Press Ctrl+C for graceful shutdown");
 
         // Load TLS configuration with ALPN support for HTTP/2
@@ -273,8 +306,9 @@ impl Server {
 
         // Enable ALPN for HTTP/2 negotiation if HTTP/2 is enabled
         if self.enable_http2 {
-            let config = Arc::get_mut(&mut rustls_config)
-                .ok_or_else(|| crate::error::Error::InternalError("Failed to configure ALPN".to_string()))?;
+            let config = Arc::get_mut(&mut rustls_config).ok_or_else(|| {
+                crate::error::Error::InternalError("Failed to configure ALPN".to_string())
+            })?;
             config.alpn_protocols = vec![b"h2".to_vec(), b"http/1.1".to_vec()];
         }
 

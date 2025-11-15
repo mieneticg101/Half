@@ -2,7 +2,7 @@
 //!
 //! Automatically cancels requests that exceed a specified duration.
 
-use crate::{middleware::Middleware, Error, Request, Response, Result};
+use crate::{Error, Request, Response, Result, middleware::Middleware};
 use std::future::Future;
 use std::pin::Pin;
 use std::time::Duration;
@@ -94,9 +94,8 @@ impl Middleware for Timeout {
             match timeout(duration, next(req)).await {
                 Ok(result) => result,
                 Err(_) => {
-                    let msg = message.unwrap_or_else(|| {
-                        format!("Request timeout after {:?}", duration)
-                    });
+                    let msg =
+                        message.unwrap_or_else(|| format!("Request timeout after {:?}", duration));
                     Err(Error::InternalError(msg))
                 }
             }
@@ -117,8 +116,7 @@ mod tests {
 
     #[test]
     fn test_timeout_config_builder() {
-        let config = TimeoutConfig::new(Duration::from_secs(10))
-            .message("Custom timeout message");
+        let config = TimeoutConfig::new(Duration::from_secs(10)).message("Custom timeout message");
 
         assert_eq!(config.duration, Duration::from_secs(10));
         assert_eq!(config.message, Some("Custom timeout message".to_string()));

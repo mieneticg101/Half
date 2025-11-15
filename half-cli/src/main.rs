@@ -206,7 +206,12 @@ async fn {}_handler(req: Request) -> Response {{
     println!("\n📋 Add this to your main.rs:\n");
     println!("{}", handler_code);
     println!("\nAnd register it in your router:");
-    println!("  router.{}(\"{}\", {}_handler);", method.to_lowercase(), path, fn_name);
+    println!(
+        "  router.{}(\"{}\", {}_handler);",
+        method.to_lowercase(),
+        path,
+        fn_name
+    );
 
     Ok(())
 }
@@ -272,7 +277,16 @@ mod tests {{
     }}
 }}
 "#,
-        name, name, name, name, name, name, name, name, name.to_lowercase(), name
+        name,
+        name,
+        name,
+        name,
+        name,
+        name,
+        name,
+        name,
+        name.to_lowercase(),
+        name
     );
 
     println!("\n📋 Middleware code:\n");
@@ -357,9 +371,22 @@ mod tests {{
     }}
 }}
 "#,
-        name, name, name, controller_name, controller_name, controller_name,
-        name, name, controller_name, name, name, name, name, controller_name,
-        name, name
+        name,
+        name,
+        name,
+        controller_name,
+        controller_name,
+        controller_name,
+        name,
+        name,
+        controller_name,
+        name,
+        name,
+        name,
+        name,
+        controller_name,
+        name,
+        name
     );
 
     println!("\n📋 Controller code:\n");

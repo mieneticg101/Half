@@ -3,11 +3,11 @@
 //! Provides token-based CSRF protection for state-changing operations.
 
 use crate::{
+    Request, Response,
     error::{Error, Result},
     middleware::{Middleware, Next},
-    Request, Response,
 };
-use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
+use base64::{Engine, engine::general_purpose::STANDARD as BASE64};
 use hmac::{Hmac, Mac};
 use rand::Rng;
 use sha2::Sha256;
@@ -29,8 +29,7 @@ impl CsrfToken {
         let random_bytes: [u8; 32] = rng.random();
 
         // Create HMAC of random bytes with secret
-        let mut mac = HmacSha256::new_from_slice(secret)
-            .expect("HMAC can take key of any size");
+        let mut mac = HmacSha256::new_from_slice(secret).expect("HMAC can take key of any size");
         mac.update(&random_bytes);
         let signature = mac.finalize().into_bytes();
 
@@ -60,8 +59,7 @@ impl CsrfToken {
         let (random_bytes, signature) = token_bytes.split_at(32);
 
         // Verify HMAC
-        let mut mac = HmacSha256::new_from_slice(secret)
-            .expect("HMAC can take key of any size");
+        let mut mac = HmacSha256::new_from_slice(secret).expect("HMAC can take key of any size");
         mac.update(random_bytes);
 
         mac.verify_slice(signature).is_ok()
@@ -118,7 +116,9 @@ impl CsrfProtection {
 
     /// Check if a path is exempt from CSRF protection
     fn is_exempt(&self, path: &str) -> bool {
-        self.exempt_paths.iter().any(|exempt| path.starts_with(exempt))
+        self.exempt_paths
+            .iter()
+            .any(|exempt| path.starts_with(exempt))
     }
 
     /// Extract CSRF token from request
@@ -150,10 +150,7 @@ impl Middleware for CsrfProtection {
             let path = req.path().to_string();
 
             // Only check state-changing methods
-            let requires_csrf = matches!(
-                method.as_str(),
-                "POST" | "PUT" | "DELETE" | "PATCH"
-            );
+            let requires_csrf = matches!(method.as_str(), "POST" | "PUT" | "DELETE" | "PATCH");
 
             if requires_csrf && !self.is_exempt(&path) {
                 // Extract and verify token
@@ -200,8 +197,7 @@ mod tests {
 
     #[test]
     fn test_csrf_protection_exempt() {
-        let csrf = CsrfProtection::new(b"secret".to_vec())
-            .exempt("/api/webhook");
+        let csrf = CsrfProtection::new(b"secret".to_vec()).exempt("/api/webhook");
 
         assert!(csrf.is_exempt("/api/webhook"));
         assert!(csrf.is_exempt("/api/webhook/github"));

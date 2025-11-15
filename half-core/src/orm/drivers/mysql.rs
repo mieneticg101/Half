@@ -2,7 +2,7 @@
 //!
 //! Provides MySQL-specific connection and query handling.
 
-use super::{ConnectionInfo, DatabaseDriver, DatabaseType, SqlDialect, DialectType};
+use super::{ConnectionInfo, DatabaseDriver, DatabaseType, DialectType, SqlDialect};
 use crate::orm::connection::{Connection, ConnectionError};
 
 /// MySQL database driver
@@ -22,8 +22,7 @@ impl MySqlDriver {
     /// Parse MySQL connection URL
     /// Format: mysql://[user[:password]@][host][:port][/database][?param1=value1&...]
     fn parse_mysql_url(&self, url: &str) -> Result<ConnectionInfo, String> {
-        let url = url.strip_prefix("mysql://")
-            .ok_or("Invalid MySQL URL")?;
+        let url = url.strip_prefix("mysql://").ok_or("Invalid MySQL URL")?;
 
         let mut info = ConnectionInfo::new(DatabaseType::MySQL, "localhost", "mysql");
 
@@ -106,7 +105,7 @@ impl DatabaseDriver for MySqlDriver {
         // In a real implementation, this would establish an actual MySQL connection
         // using a library like mysql_async or sqlx
         Err(ConnectionError::ConnectionFailed(
-            "MySQL driver not yet fully implemented. Use sqlx or mysql_async.".to_string()
+            "MySQL driver not yet fully implemented. Use sqlx or mysql_async.".to_string(),
         ))
     }
 
@@ -145,10 +144,7 @@ mod tests {
         assert_eq!(info.host, "localhost");
         assert_eq!(info.port, 3307);
         assert_eq!(info.database, "mydb");
-        assert_eq!(
-            info.options.get("charset"),
-            Some(&"utf8mb4".to_string())
-        );
+        assert_eq!(info.options.get("charset"), Some(&"utf8mb4".to_string()));
     }
 
     #[test]

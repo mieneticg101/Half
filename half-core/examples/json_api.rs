@@ -4,7 +4,7 @@
 //!
 //! Run with: cargo run --example json_api
 
-use half_core::{Router, Server, Request, Response};
+use half_core::{Request, Response, Router, Server};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -33,8 +33,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             },
         ];
 
-        Response::json(&users)
-            .unwrap_or_else(|_| Response::internal_error())
+        Response::json(&users).unwrap_or_else(|_| Response::internal_error())
     });
 
     // GET /users/:id - Get user by ID
@@ -47,8 +46,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             email: format!("user{}@example.com", id),
         };
 
-        Response::json(&user)
-            .unwrap_or_else(|_| Response::internal_error())
+        Response::json(&user).unwrap_or_else(|_| Response::internal_error())
     });
 
     println!("🚀 JSON API Server running on http://127.0.0.1:3000");

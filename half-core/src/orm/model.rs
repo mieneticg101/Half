@@ -517,9 +517,7 @@ mod tests {
 
     #[test]
     fn test_field_metadata() {
-        let field = FieldMetadata::new("email")
-            .required()
-            .validator("email");
+        let field = FieldMetadata::new("email").required().validator("email");
 
         assert_eq!(field.name, "email");
         assert!(field.required);

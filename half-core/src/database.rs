@@ -340,10 +340,7 @@ mod tests {
 
     #[test]
     fn test_select_all() {
-        let query = QueryBuilder::new()
-            .select_all()
-            .from("users")
-            .build();
+        let query = QueryBuilder::new().select_all().from("users").build();
 
         assert_eq!(query, "SELECT * FROM users");
     }
@@ -357,7 +354,10 @@ mod tests {
             .where_clause("status = 'active'")
             .build();
 
-        assert_eq!(query, "SELECT * FROM users WHERE age > 18 AND status = 'active'");
+        assert_eq!(
+            query,
+            "SELECT * FROM users WHERE age > 18 AND status = 'active'"
+        );
     }
 
     #[test]
@@ -418,10 +418,8 @@ mod tests {
 
     #[test]
     fn test_insert() {
-        let query = QueryBuilder::insert(
-            "users",
-            &[("name", "John"), ("email", "john@example.com")],
-        );
+        let query =
+            QueryBuilder::insert("users", &[("name", "John"), ("email", "john@example.com")]);
 
         assert_eq!(query, "INSERT INTO users (name, email) VALUES (?, ?)");
     }
@@ -430,14 +428,14 @@ mod tests {
     fn test_update() {
         let query = QueryBuilder::update(
             "users",
-            &[("name", "John Updated"), ("email", "john.updated@example.com")],
+            &[
+                ("name", "John Updated"),
+                ("email", "john.updated@example.com"),
+            ],
             "id = ?",
         );
 
-        assert_eq!(
-            query,
-            "UPDATE users SET name = ?, email = ? WHERE id = ?"
-        );
+        assert_eq!(query, "UPDATE users SET name = ?, email = ? WHERE id = ?");
     }
 
     #[test]

@@ -2,7 +2,7 @@
 //!
 //! Catches panics and errors, converts them to appropriate HTTP responses.
 
-use crate::{middleware::Middleware, Request, Response, Result};
+use crate::{Request, Response, Result, middleware::Middleware};
 use futures_util::FutureExt;
 use hyper::StatusCode;
 use std::future::Future;
@@ -120,9 +120,7 @@ impl Middleware for Recovery {
 
         Box::pin(async move {
             // Catch panics
-            let result = AssertUnwindSafe(next(req))
-                .catch_unwind()
-                .await;
+            let result = AssertUnwindSafe(next(req)).catch_unwind().await;
 
             match result {
                 Ok(response_result) => {

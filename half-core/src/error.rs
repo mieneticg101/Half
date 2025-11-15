@@ -112,7 +112,14 @@ mod tests {
 
     #[test]
     fn test_error_status_codes() {
-        assert_eq!(Error::NotFound { method: "GET".into(), path: "/".into() }.status_code(), 404);
+        assert_eq!(
+            Error::NotFound {
+                method: "GET".into(),
+                path: "/".into()
+            }
+            .status_code(),
+            404
+        );
         assert_eq!(Error::BadRequest("test".into()).status_code(), 400);
         assert_eq!(Error::Unauthorized("test".into()).status_code(), 401);
         assert_eq!(Error::Forbidden("test".into()).status_code(), 403);

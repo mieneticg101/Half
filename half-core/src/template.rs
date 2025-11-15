@@ -109,7 +109,9 @@ impl TemplateEngine {
 
         let mut hbs = self.handlebars.write().await;
         hbs.register_template_file(&name, template_path)
-            .map_err(|e| Error::InternalError(format!("Failed to register template file: {}", e)))?;
+            .map_err(|e| {
+                Error::InternalError(format!("Failed to register template file: {}", e))
+            })?;
 
         Ok(())
     }
@@ -124,25 +126,15 @@ impl TemplateEngine {
     }
 
     /// Render a template with context data
-    pub async fn render<T: Serialize>(
-        &self,
-        name: &str,
-        context: &T,
-    ) -> Result<String> {
+    pub async fn render<T: Serialize>(&self, name: &str, context: &T) -> Result<String> {
         let hbs = self.handlebars.read().await;
 
         hbs.render(name, context)
-            .map_err(|e| {
-                Error::InternalError(format!("Template render error: {}", e))
-            })
+            .map_err(|e| Error::InternalError(format!("Template render error: {}", e)))
     }
 
     /// Render a template and return HTTP response
-    pub async fn render_response<T: Serialize>(
-        &self,
-        name: &str,
-        context: &T,
-    ) -> Result<Response> {
+    pub async fn render_response<T: Serialize>(&self, name: &str, context: &T) -> Result<Response> {
         let html = self.render(name, context).await?;
         Ok(Response::html(&html))
     }
@@ -233,9 +225,7 @@ mod tests {
         let config = TemplateConfig::new("./templates");
         let engine = TemplateEngine::new(config);
 
-        let result = engine
-            .register_template("test", "Hello {{name}}!")
-            .await;
+        let result = engine.register_template("test", "Hello {{name}}!").await;
 
         assert!(result.is_ok());
     }
@@ -302,10 +292,7 @@ mod tests {
         let config = TemplateConfig::new("./templates");
         let engine = TemplateEngine::new(config);
 
-        engine
-            .register_template("test", "Hello!")
-            .await
-            .unwrap();
+        engine.register_template("test", "Hello!").await.unwrap();
 
         engine.clear().await;
 

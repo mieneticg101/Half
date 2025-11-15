@@ -7,7 +7,7 @@
 //!
 //! Run with: cargo run --example database_dialects
 
-use half_core::orm::drivers::{SqlDialect, DialectType};
+use half_core::orm::drivers::{DialectType, SqlDialect};
 use half_core::orm::model::Value;
 
 fn main() {
@@ -25,7 +25,8 @@ fn main() {
     println!();
     for (name, dtype) in &dialects {
         let dialect = SqlDialect::new(*dtype);
-        println!("   {}: {} {} {}",
+        println!(
+            "   {}: {} {} {}",
             name,
             dialect.placeholder(1),
             dialect.placeholder(2),
@@ -38,10 +39,7 @@ fn main() {
     println!();
     for (name, dtype) in &dialects {
         let dialect = SqlDialect::new(*dtype);
-        println!("   {}: {}",
-            name,
-            dialect.quote_identifier("user")
-        );
+        println!("   {}: {}", name, dialect.quote_identifier("user"));
     }
 
     // 3. Type mappings

@@ -2,7 +2,7 @@
 //!
 //! Provides PostgreSQL-specific connection and query handling.
 
-use super::{ConnectionInfo, DatabaseDriver, DatabaseType, SqlDialect, DialectType};
+use super::{ConnectionInfo, DatabaseDriver, DatabaseType, DialectType, SqlDialect};
 use crate::orm::connection::{Connection, ConnectionError};
 
 /// PostgreSQL database driver
@@ -22,7 +22,8 @@ impl PostgresDriver {
     /// Parse PostgreSQL connection URL
     /// Format: postgresql://[user[:password]@][host][:port][/database][?param1=value1&...]
     fn parse_postgres_url(&self, url: &str) -> Result<ConnectionInfo, String> {
-        let url = url.strip_prefix("postgresql://")
+        let url = url
+            .strip_prefix("postgresql://")
             .or_else(|| url.strip_prefix("postgres://"))
             .ok_or("Invalid PostgreSQL URL")?;
 
@@ -107,7 +108,7 @@ impl DatabaseDriver for PostgresDriver {
         // In a real implementation, this would establish an actual PostgreSQL connection
         // using a library like tokio-postgres or sqlx
         Err(ConnectionError::ConnectionFailed(
-            "PostgreSQL driver not yet fully implemented. Use sqlx or tokio-postgres.".to_string()
+            "PostgreSQL driver not yet fully implemented. Use sqlx or tokio-postgres.".to_string(),
         ))
     }
 
@@ -146,10 +147,7 @@ mod tests {
         assert_eq!(info.host, "localhost");
         assert_eq!(info.port, 5433);
         assert_eq!(info.database, "mydb");
-        assert_eq!(
-            info.options.get("sslmode"),
-            Some(&"require".to_string())
-        );
+        assert_eq!(info.options.get("sslmode"), Some(&"require".to_string()));
     }
 
     #[test]
@@ -159,10 +157,7 @@ mod tests {
             .parse_url("postgresql://localhost/mydb?connect_timeout=10&application_name=myapp")
             .unwrap();
 
-        assert_eq!(
-            info.options.get("connect_timeout"),
-            Some(&"10".to_string())
-        );
+        assert_eq!(info.options.get("connect_timeout"), Some(&"10".to_string()));
         assert_eq!(
             info.options.get("application_name"),
             Some(&"myapp".to_string())

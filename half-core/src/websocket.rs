@@ -4,15 +4,13 @@
 
 use crate::error::{Error, Result};
 use futures_util::{
-    stream::{SplitSink, SplitStream},
     SinkExt, StreamExt,
+    stream::{SplitSink, SplitStream},
 };
 use std::sync::Arc;
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
-use tokio_tungstenite::{
-    accept_async, tungstenite::protocol::Message, WebSocketStream,
-};
+use tokio_tungstenite::{WebSocketStream, accept_async, tungstenite::protocol::Message};
 
 /// WebSocket connection handle
 ///
@@ -114,7 +112,7 @@ impl WebSocket {
                                 return Some(Err(Error::InternalError(format!(
                                     "Invalid UTF-8 in binary message: {}",
                                     e
-                                ))))
+                                ))));
                             }
                         }
                     }
@@ -137,10 +135,7 @@ impl WebSocket {
                     }
                 },
                 Some(Err(e)) => {
-                    return Some(Err(Error::InternalError(format!(
-                        "WebSocket error: {}",
-                        e
-                    ))))
+                    return Some(Err(Error::InternalError(format!("WebSocket error: {}", e))));
                 }
                 None => return None,
             }
@@ -168,10 +163,7 @@ impl WebSocket {
                     Message::Frame(_) => continue,
                 },
                 Some(Err(e)) => {
-                    return Some(Err(Error::InternalError(format!(
-                        "WebSocket error: {}",
-                        e
-                    ))))
+                    return Some(Err(Error::InternalError(format!("WebSocket error: {}", e))));
                 }
                 None => return None,
             }

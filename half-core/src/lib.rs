@@ -89,89 +89,82 @@ pub mod upload;
 pub mod websocket;
 
 // Re-export commonly used types
-pub use auth::{JwtAuth, BasicAuth, ApiKeyAuth, Claims, AuthError};
-pub use body::{BodyParser, BodyConfig, BodyData, BodyError};
+pub use auth::{ApiKeyAuth, AuthError, BasicAuth, Claims, JwtAuth};
+pub use body::{BodyConfig, BodyData, BodyError, BodyParser};
 pub use config::{Config, ConfigBuilder, Environment};
-pub use cookies::{CookieJar, SignedCookieJar, CookieBuilder};
-pub use database::{QueryBuilder, QueryParams, Order, JoinType};
+pub use cookies::{CookieBuilder, CookieJar, SignedCookieJar};
+pub use database::{JoinType, Order, QueryBuilder, QueryParams};
 pub use error::{Error, Result};
-pub use orm::{
-    connection::{Connection, ConnectionPool, DatabaseConfig, Transaction, ConnectionError},
-    model::{Model, Entity, Value, ModelError, ModelBuilder},
-    query::{Query, QueryExecutor, Insert, Update, Delete},
-    schema::{Schema, Table, Column, ColumnType, Constraint, Index, ForeignKeyAction},
-    migrations::{Migration, MigrationRunner, MigrationVersion, MigrationBuilder},
-    relations::{Relation, RelationType, HasOne, HasMany, BelongsTo, BelongsToMany},
-    drivers::{
-        DatabaseType, DatabaseDriver, ConnectionInfo,
-        PostgresDriver, MySqlDriver, SqliteDriver,
-        SqlDialect, DialectType,
-    },
-};
 pub use handler::Handler;
-pub use health::{HealthCheck, HealthResponse, HealthStatus, ComponentHealth};
-pub use logging::{LogConfig, RequestLogger, MetricsLogger};
-pub use metrics::{Metrics, Counter, Gauge, Histogram, Timer};
+pub use health::{ComponentHealth, HealthCheck, HealthResponse, HealthStatus};
+pub use logging::{LogConfig, MetricsLogger, RequestLogger};
+pub use metrics::{Counter, Gauge, Histogram, Metrics, Timer};
+pub use orm::{
+    connection::{Connection, ConnectionError, ConnectionPool, DatabaseConfig, Transaction},
+    drivers::{
+        ConnectionInfo, DatabaseDriver, DatabaseType, DialectType, MySqlDriver, PostgresDriver,
+        SqlDialect, SqliteDriver,
+    },
+    migrations::{Migration, MigrationBuilder, MigrationRunner, MigrationVersion},
+    model::{Entity, Model, ModelBuilder, ModelError, Value},
+    query::{Delete, Insert, Query, QueryExecutor, Update},
+    relations::{BelongsTo, BelongsToMany, HasMany, HasOne, Relation, RelationType},
+    schema::{Column, ColumnType, Constraint, ForeignKeyAction, Index, Schema, Table},
+};
 pub use request::Request;
-pub use response::{Response, Cookie, SameSite};
+pub use response::{Cookie, Response, SameSite};
 pub use router::Router;
 pub use server::{Server, TlsConfig};
-pub use session::{SessionStore, Session, SessionConfig, SessionStats};
+pub use session::{Session, SessionConfig, SessionStats, SessionStore};
 pub use sse::{SseChannel, SseEvent, SseStream};
-pub use static_files::{StaticFileServer, StaticConfig};
-pub use template::{TemplateEngine, TemplateConfig, TemplateContext};
+pub use static_files::{StaticConfig, StaticFileServer};
+pub use template::{TemplateConfig, TemplateContext, TemplateEngine};
 pub use testing::{TestClient, TestRequest, TestResponse};
-pub use trace::{RequestId, TraceContext, TraceConfig, RequestTracer};
-pub use upload::{FileUpload, UploadConfig, UploadedFile, MultipartData, UploadError};
+pub use trace::{RequestId, RequestTracer, TraceConfig, TraceContext};
+pub use upload::{FileUpload, MultipartData, UploadConfig, UploadError, UploadedFile};
 pub use websocket::{WebSocket, WsMessage};
 
 // Re-export macros from half-macros
-pub use half_macros::{get, post, put, delete, patch, route};
+pub use half_macros::{delete, get, patch, post, put, route};
 
 // Re-export security features
 pub use security::{
-    CsrfProtection, CsrfToken,
-    XssFilter,
-    Validator,
-    NonceProtection,
-    Helmet, CspConfig, PermissionsPolicyConfig,
+    CspConfig, CsrfProtection, CsrfToken, Helmet, NonceProtection, PermissionsPolicyConfig,
+    Validator, XssFilter,
 };
 
 /// Prelude module for convenient imports
 pub mod prelude {
     pub use crate::{
-        auth::{JwtAuth, BasicAuth, ApiKeyAuth, Claims, AuthError},
-        body::{BodyParser, BodyConfig, BodyData, BodyError},
-        cookies::{CookieJar, SignedCookieJar, CookieBuilder},
-        database::{QueryBuilder, QueryParams, Order, JoinType},
+        auth::{ApiKeyAuth, AuthError, BasicAuth, Claims, JwtAuth},
+        body::{BodyConfig, BodyData, BodyError, BodyParser},
+        cookies::{CookieBuilder, CookieJar, SignedCookieJar},
+        database::{JoinType, Order, QueryBuilder, QueryParams},
         error::{Error, Result},
         handler::Handler,
-        logging::{LogConfig, RequestLogger, MetricsLogger},
+        logging::{LogConfig, MetricsLogger, RequestLogger},
         middleware::Middleware,
         orm::{
             connection::{Connection, ConnectionPool, DatabaseConfig},
-            model::{Model, Entity, Value},
-            query::{Query, Insert, Update, Delete},
-            schema::{Schema, Table, Column, ColumnType},
+            drivers::{DatabaseDriver, DatabaseType, MySqlDriver, PostgresDriver, SqliteDriver},
             migrations::{Migration, MigrationRunner},
-            relations::{HasOne, HasMany, BelongsTo, BelongsToMany},
-            drivers::{DatabaseType, DatabaseDriver, PostgresDriver, MySqlDriver, SqliteDriver},
+            model::{Entity, Model, Value},
+            query::{Delete, Insert, Query, Update},
+            relations::{BelongsTo, BelongsToMany, HasMany, HasOne},
+            schema::{Column, ColumnType, Schema, Table},
         },
         request::Request,
         response::{Cookie, Response, SameSite},
         router::Router,
         security::{
-            CsrfProtection, CsrfToken,
-            XssFilter,
-            Validator,
-            NonceProtection,
-            Helmet, CspConfig, PermissionsPolicyConfig,
+            CspConfig, CsrfProtection, CsrfToken, Helmet, NonceProtection, PermissionsPolicyConfig,
+            Validator, XssFilter,
         },
         server::{Server, TlsConfig},
-        static_files::{StaticFileServer, StaticConfig},
-        template::{TemplateEngine, TemplateConfig, TemplateContext},
-        trace::{RequestId, TraceContext, TraceConfig, RequestTracer},
-        upload::{FileUpload, UploadConfig, UploadedFile, MultipartData, UploadError},
+        static_files::{StaticConfig, StaticFileServer},
+        template::{TemplateConfig, TemplateContext, TemplateEngine},
+        trace::{RequestId, RequestTracer, TraceConfig, TraceContext},
+        upload::{FileUpload, MultipartData, UploadConfig, UploadError, UploadedFile},
     };
 
     pub use half_macros::{delete, get, patch, post, put, route};

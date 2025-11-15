@@ -116,7 +116,7 @@ pub struct SessionConfig {
 impl Default for SessionConfig {
     fn default() -> Self {
         Self {
-            ttl: Duration::from_secs(3600), // 1 hour
+            ttl: Duration::from_secs(3600),             // 1 hour
             cleanup_interval: Duration::from_secs(300), // 5 minutes
             cookie_name: "session_id".to_string(),
             secure: true,

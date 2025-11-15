@@ -92,17 +92,17 @@ impl StaticFileServer {
         }
 
         // Read file
-        let mut file = fs::File::open(&file_path).await
+        let mut file = fs::File::open(&file_path)
+            .await
             .map_err(|_| Error::BadRequest("Cannot open file".into()))?;
 
         let mut contents = Vec::new();
-        file.read_to_end(&mut contents).await
+        file.read_to_end(&mut contents)
+            .await
             .map_err(|e| Error::InternalError(format!("Failed to read file: {}", e)))?;
 
         // Guess MIME type
-        let mime_type = from_path(&file_path)
-            .first_or_octet_stream()
-            .to_string();
+        let mime_type = from_path(&file_path).first_or_octet_stream().to_string();
 
         // Build response
         let mut response = Response::new()
@@ -111,7 +111,8 @@ impl StaticFileServer {
 
         // Add cache headers if configured
         if let Some(max_age) = self.config.cache_max_age {
-            response = response.header_str("Cache-Control", &format!("public, max-age={}", max_age));
+            response =
+                response.header_str("Cache-Control", &format!("public, max-age={}", max_age));
         }
 
         Ok(response)

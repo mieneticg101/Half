@@ -236,9 +236,7 @@ impl Stream for SseStream {
 
         // Poll for events from the channel
         match self.receiver.poll_recv(cx) {
-            Poll::Ready(Some(event)) => {
-                Poll::Ready(Some(Ok(Bytes::from(event.to_sse_format()))))
-            }
+            Poll::Ready(Some(event)) => Poll::Ready(Some(Ok(Bytes::from(event.to_sse_format())))),
             Poll::Ready(None) => Poll::Ready(None),
             Poll::Pending => Poll::Pending,
         }

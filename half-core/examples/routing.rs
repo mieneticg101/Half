@@ -4,7 +4,7 @@
 //!
 //! Run with: cargo run --example routing
 
-use half_core::{Router, Server, Request, Response};
+use half_core::{Request, Response, Router, Server};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -22,17 +22,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     // GET /users/:user_id/posts/:post_id
-    router.get("/users/:user_id/posts/:post_id", |req: Request| async move {
-        let user_id = req.param("user_id").unwrap_or("?");
-        let post_id = req.param("post_id").unwrap_or("?");
+    router.get(
+        "/users/:user_id/posts/:post_id",
+        |req: Request| async move {
+            let user_id = req.param("user_id").unwrap_or("?");
+            let post_id = req.param("post_id").unwrap_or("?");
 
-        Response::json(&serde_json::json!({
-            "user_id": user_id,
-            "post_id": post_id,
-            "message": format!("Fetching post {} for user {}", post_id, user_id)
-        }))
-        .unwrap_or_else(|_| Response::text("Error"))
-    });
+            Response::json(&serde_json::json!({
+                "user_id": user_id,
+                "post_id": post_id,
+                "message": format!("Fetching post {} for user {}", post_id, user_id)
+            }))
+            .unwrap_or_else(|_| Response::text("Error"))
+        },
+    );
 
     // GET /search?q=query
     router.get("/search", |req: Request| async move {
@@ -49,7 +52,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // POST /submit
     router.post("/submit", |req: Request| async move {
-        let body = req.body_string().unwrap_or_else(|_| String::from("(empty)"));
+        let body = req
+            .body_string()
+            .unwrap_or_else(|_| String::from("(empty)"));
 
         Response::json(&serde_json::json!({
             "message": "Data received",

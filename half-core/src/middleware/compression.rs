@@ -4,9 +4,9 @@
 //! Automatically negotiates the best compression algorithm based on Accept-Encoding header.
 
 use crate::{
+    Request, Response,
     error::Result,
     middleware::{Middleware, Next},
-    Request, Response,
 };
 use async_compression::tokio::bufread::{BrotliEncoder, GzipEncoder, ZstdEncoder};
 use bytes::Bytes;
@@ -48,9 +48,9 @@ pub struct CompressionLevel {
 impl Default for CompressionLevel {
     fn default() -> Self {
         Self {
-            brotli: 6,  // 0-11, 6 is balanced
-            gzip: 6,    // 0-9, 6 is balanced
-            zstd: 3,    // 1-21, 3 is balanced
+            brotli: 6, // 0-11, 6 is balanced
+            gzip: 6,   // 0-9, 6 is balanced
+            zstd: 3,   // 1-21, 3 is balanced
         }
     }
 }
@@ -129,7 +129,7 @@ impl Compression {
             enable_gzip: true,
             enable_zstd: true,
             level: CompressionLevel::default(),
-            min_size: 1024,  // 1KB minimum
+            min_size: 1024, // 1KB minimum
             compressible_types: vec![
                 "text/".to_string(),
                 "application/json".to_string(),
@@ -199,35 +199,42 @@ impl Compression {
     /// Check if content type is compressible
     fn is_compressible(&self, content_type: Option<&str>) -> bool {
         if let Some(ct) = content_type {
-            self.compressible_types.iter().any(|pattern| ct.starts_with(pattern))
+            self.compressible_types
+                .iter()
+                .any(|pattern| ct.starts_with(pattern))
         } else {
             false
         }
     }
 
     /// Compress response body
-    async fn compress_body(
-        &self,
-        body: Bytes,
-        algorithm: CompressionAlgorithm,
-    ) -> Result<Bytes> {
+    async fn compress_body(&self, body: Bytes, algorithm: CompressionAlgorithm) -> Result<Bytes> {
         let cursor = Cursor::new(body);
 
         let compressed = match algorithm {
             CompressionAlgorithm::Brotli => {
-                let mut encoder = BrotliEncoder::with_quality(cursor, async_compression::Level::Precise(self.level.brotli));
+                let mut encoder = BrotliEncoder::with_quality(
+                    cursor,
+                    async_compression::Level::Precise(self.level.brotli),
+                );
                 let mut buf = Vec::new();
                 encoder.read_to_end(&mut buf).await?;
                 Bytes::from(buf)
             }
             CompressionAlgorithm::Gzip => {
-                let mut encoder = GzipEncoder::with_quality(cursor, async_compression::Level::Precise(self.level.gzip));
+                let mut encoder = GzipEncoder::with_quality(
+                    cursor,
+                    async_compression::Level::Precise(self.level.gzip),
+                );
                 let mut buf = Vec::new();
                 encoder.read_to_end(&mut buf).await?;
                 Bytes::from(buf)
             }
             CompressionAlgorithm::Zstd => {
-                let mut encoder = ZstdEncoder::with_quality(cursor, async_compression::Level::Precise(self.level.zstd));
+                let mut encoder = ZstdEncoder::with_quality(
+                    cursor,
+                    async_compression::Level::Precise(self.level.zstd),
+                );
                 let mut buf = Vec::new();
                 encoder.read_to_end(&mut buf).await?;
                 Bytes::from(buf)
@@ -246,8 +253,7 @@ impl Middleware for Compression {
     ) -> Pin<Box<dyn Future<Output = Result<Response>> + Send + '_>> {
         Box::pin(async move {
             // Get Accept-Encoding header
-            let accept_encoding = req.header("accept-encoding")
-                .unwrap_or("").to_string();
+            let accept_encoding = req.header("accept-encoding").unwrap_or("").to_string();
 
             // Get response
             let mut response = next(req).await?;
@@ -264,7 +270,9 @@ impl Middleware for Compression {
             };
 
             // Check content type
-            let content_type = response.get_headers().get("content-type")
+            let content_type = response
+                .get_headers()
+                .get("content-type")
                 .and_then(|v| v.to_str().ok());
 
             if !self.is_compressible(content_type) {
@@ -350,10 +358,7 @@ mod tests {
             Some(CompressionAlgorithm::Zstd)
         );
 
-        assert_eq!(
-            comp.choose_compression("deflate"),
-            None
-        );
+        assert_eq!(comp.choose_compression("deflate"), None);
     }
 
     #[test]

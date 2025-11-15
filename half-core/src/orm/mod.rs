@@ -9,21 +9,20 @@
 //! - Multi-database support (PostgreSQL, MySQL, SQLite, etc.)
 
 pub mod connection;
+pub mod drivers;
+pub mod migrations;
 pub mod model;
 pub mod query;
 pub mod relations;
 pub mod schema;
-pub mod migrations;
-pub mod drivers;
 
-pub use connection::{Connection, ConnectionPool, Transaction, DatabaseConfig};
-pub use model::{Model, Entity};
-pub use query::{Query, QueryExecutor};
-pub use relations::{Relation, RelationType, HasOne, HasMany, BelongsTo, BelongsToMany};
-pub use schema::{Schema, Column, ColumnType, Constraint, Index, Table};
-pub use migrations::{Migration, MigrationRunner, MigrationVersion};
+pub use connection::{Connection, ConnectionPool, DatabaseConfig, Transaction};
 pub use drivers::{
-    DatabaseType, DatabaseDriver, ConnectionInfo,
-    PostgresDriver, MySqlDriver, SqliteDriver,
-    SqlDialect, DialectType,
+    ConnectionInfo, DatabaseDriver, DatabaseType, DialectType, MySqlDriver, PostgresDriver,
+    SqlDialect, SqliteDriver,
 };
+pub use migrations::{Migration, MigrationRunner, MigrationVersion};
+pub use model::{Entity, Model};
+pub use query::{Query, QueryExecutor};
+pub use relations::{BelongsTo, BelongsToMany, HasMany, HasOne, Relation, RelationType};
+pub use schema::{Column, ColumnType, Constraint, Index, Schema, Table};

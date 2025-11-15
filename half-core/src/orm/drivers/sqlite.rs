@@ -2,7 +2,7 @@
 //!
 //! Provides SQLite-specific connection and query handling.
 
-use super::{ConnectionInfo, DatabaseDriver, DatabaseType, SqlDialect, DialectType};
+use super::{ConnectionInfo, DatabaseDriver, DatabaseType, DialectType, SqlDialect};
 use crate::orm::connection::{Connection, ConnectionError};
 
 /// SQLite database driver
@@ -22,7 +22,8 @@ impl SqliteDriver {
     /// Parse SQLite connection URL
     /// Format: sqlite://path/to/file.db or file:path/to/file.db
     fn parse_sqlite_url(&self, url: &str) -> Result<ConnectionInfo, String> {
-        let path = url.strip_prefix("sqlite://")
+        let path = url
+            .strip_prefix("sqlite://")
             .or_else(|| url.strip_prefix("file:"))
             .ok_or("Invalid SQLite URL")?;
 
@@ -72,7 +73,7 @@ impl DatabaseDriver for SqliteDriver {
         // In a real implementation, this would establish an actual SQLite connection
         // using a library like rusqlite or sqlx
         Err(ConnectionError::ConnectionFailed(
-            "SQLite driver not yet fully implemented. Use sqlx or rusqlite.".to_string()
+            "SQLite driver not yet fully implemented. Use sqlx or rusqlite.".to_string(),
         ))
     }
 

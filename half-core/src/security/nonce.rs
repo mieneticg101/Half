@@ -4,11 +4,11 @@
 //! Each request must include a unique nonce that can only be used once.
 
 use crate::{
+    Request, Response,
     error::{Error, Result},
     middleware::{Middleware, Next},
-    Request, Response,
 };
-use base64::{engine::general_purpose::URL_SAFE_NO_PAD as BASE64, Engine};
+use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD as BASE64};
 use chrono::{DateTime, Utc};
 use dashmap::DashMap;
 use rand::Rng;
@@ -127,7 +127,9 @@ impl NonceProtection {
 
     /// Check if a path is exempt from nonce protection
     fn is_exempt(&self, path: &str) -> bool {
-        self.exempt_paths.iter().any(|exempt| path.starts_with(exempt))
+        self.exempt_paths
+            .iter()
+            .any(|exempt| path.starts_with(exempt))
     }
 
     /// Validate and consume a nonce
@@ -222,9 +224,7 @@ impl Middleware for NonceProtection {
                     self.validate_nonce(&nonce)?;
                     next(req).await
                 }
-                None => {
-                    Err(Error::InvalidNonce("Missing nonce header".to_string()))
-                }
+                None => Err(Error::InvalidNonce("Missing nonce header".to_string())),
             }
         })
     }

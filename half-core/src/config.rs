@@ -198,7 +198,10 @@ impl ConfigBuilder {
             }
             _ => {
                 if !prefix.is_empty() {
-                    result.insert(prefix.to_string(), value.to_string().trim_matches('"').to_string());
+                    result.insert(
+                        prefix.to_string(),
+                        value.to_string().trim_matches('"').to_string(),
+                    );
                 }
             }
         }
@@ -221,7 +224,8 @@ impl ConfigBuilder {
             // Parse key = value
             if let Some((key, value)) = line.split_once('=') {
                 let key = key.trim().to_string();
-                let value = value.trim()
+                let value = value
+                    .trim()
                     .trim_matches('"')
                     .trim_matches('\'')
                     .to_string();
@@ -283,7 +287,9 @@ impl Config {
 
     /// Get a configuration value as string with default
     pub fn get_or(&self, key: &str, default: &str) -> String {
-        self.get(key).cloned().unwrap_or_else(|| default.to_string())
+        self.get(key)
+            .cloned()
+            .unwrap_or_else(|| default.to_string())
     }
 
     /// Get a configuration value and parse it
@@ -298,12 +304,10 @@ impl Config {
 
     /// Get a boolean value
     pub fn get_bool(&self, key: &str) -> Option<bool> {
-        self.get(key).and_then(|v| {
-            match v.to_lowercase().as_str() {
-                "true" | "1" | "yes" | "on" => Some(true),
-                "false" | "0" | "no" | "off" => Some(false),
-                _ => v.parse().ok(),
-            }
+        self.get(key).and_then(|v| match v.to_lowercase().as_str() {
+            "true" | "1" | "yes" | "on" => Some(true),
+            "false" | "0" | "no" | "off" => Some(false),
+            _ => v.parse().ok(),
         })
     }
 

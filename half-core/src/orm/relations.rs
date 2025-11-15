@@ -320,9 +320,7 @@ impl<Parent: Model, Related: Model> BelongsToMany<Parent, Related> {
     }
 }
 
-impl<Parent: Model, Related: Model> Relation<Parent, Related>
-    for BelongsToMany<Parent, Related>
-{
+impl<Parent: Model, Related: Model> Relation<Parent, Related> for BelongsToMany<Parent, Related> {
     fn relation_type(&self) -> RelationType {
         RelationType::BelongsToMany
     }
@@ -448,10 +446,7 @@ mod tests {
         ) -> Result<Self, crate::orm::model::ModelError> {
             Ok(Self {
                 id: values.get("id").and_then(|v| v.as_i64()),
-                user_id: values
-                    .get("user_id")
-                    .and_then(|v| v.as_i64())
-                    .unwrap_or(0),
+                user_id: values.get("user_id").and_then(|v| v.as_i64()).unwrap_or(0),
                 title: values
                     .get("title")
                     .and_then(|v| v.as_string())
@@ -489,10 +484,7 @@ mod tests {
         ) -> Result<Self, crate::orm::model::ModelError> {
             Ok(Self {
                 id: values.get("id").and_then(|v| v.as_i64()),
-                user_id: values
-                    .get("user_id")
-                    .and_then(|v| v.as_i64())
-                    .unwrap_or(0),
+                user_id: values.get("user_id").and_then(|v| v.as_i64()).unwrap_or(0),
                 bio: values
                     .get("bio")
                     .and_then(|v| v.as_string())

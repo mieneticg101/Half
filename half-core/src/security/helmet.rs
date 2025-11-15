@@ -4,9 +4,9 @@
 //! with additional Rust-specific security features and optimizations.
 
 use crate::{
+    Request, Response,
     error::Result,
     middleware::{Middleware, Next},
-    Request, Response,
 };
 use std::future::Future;
 use std::pin::Pin;
@@ -159,11 +159,19 @@ impl PermissionsPolicyConfig {
         add_policy(&mut policies, "magnetometer", &self.magnetometer);
         add_policy(&mut policies, "gyroscope", &self.gyroscope);
         add_policy(&mut policies, "accelerometer", &self.accelerometer);
-        add_policy(&mut policies, "ambient-light-sensor", &self.ambient_light_sensor);
+        add_policy(
+            &mut policies,
+            "ambient-light-sensor",
+            &self.ambient_light_sensor,
+        );
         add_policy(&mut policies, "autoplay", &self.autoplay);
         add_policy(&mut policies, "encrypted-media", &self.encrypted_media);
         add_policy(&mut policies, "fullscreen", &self.fullscreen);
-        add_policy(&mut policies, "picture-in-picture", &self.picture_in_picture);
+        add_policy(
+            &mut policies,
+            "picture-in-picture",
+            &self.picture_in_picture,
+        );
 
         policies.join(", ")
     }
@@ -363,7 +371,14 @@ impl Helmet {
         }
 
         // DNS Prefetch Control
-        response = response.header_str("x-dns-prefetch-control", if self.dns_prefetch_control { "on" } else { "off" });
+        response = response.header_str(
+            "x-dns-prefetch-control",
+            if self.dns_prefetch_control {
+                "on"
+            } else {
+                "off"
+            },
+        );
 
         // Expect-CT
         if self.expect_ct_enabled {
@@ -411,7 +426,10 @@ impl Helmet {
 
         // Cache control for sensitive data
         if self.cache_control_sensitive {
-            response = response.header_str("cache-control", "no-store, no-cache, must-revalidate, private");
+            response = response.header_str(
+                "cache-control",
+                "no-store, no-cache, must-revalidate, private",
+            );
             response = response.header_str("pragma", "no-cache");
         }
 

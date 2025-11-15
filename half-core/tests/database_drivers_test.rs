@@ -7,10 +7,10 @@
 //! - Database-specific features
 
 use half_core::orm::{
-    DatabaseConfig, ConnectionPool, DatabaseType,
+    ConnectionPool, DatabaseConfig, DatabaseType,
     drivers::{
-        DatabaseDriver, PostgresDriver, MySqlDriver, SqliteDriver,
-        SqlDialect, DialectType, ConnectionInfo,
+        ConnectionInfo, DatabaseDriver, DialectType, MySqlDriver, PostgresDriver, SqlDialect,
+        SqliteDriver,
     },
 };
 use std::sync::Arc;
@@ -155,7 +155,9 @@ fn test_postgres_url_parsing_simple() {
 #[test]
 fn test_postgres_url_parsing_with_auth() {
     let driver = PostgresDriver::new();
-    let info = driver.parse_url("postgresql://user:pass@localhost:5433/mydb").unwrap();
+    let info = driver
+        .parse_url("postgresql://user:pass@localhost:5433/mydb")
+        .unwrap();
 
     assert_eq!(info.db_type, DatabaseType::PostgreSQL);
     assert_eq!(info.host, "localhost");
@@ -168,7 +170,9 @@ fn test_postgres_url_parsing_with_auth() {
 #[test]
 fn test_mysql_url_parsing() {
     let driver = MySqlDriver::new();
-    let info = driver.parse_url("mysql://user:pass@localhost:3307/mydb").unwrap();
+    let info = driver
+        .parse_url("mysql://user:pass@localhost:3307/mydb")
+        .unwrap();
 
     assert_eq!(info.db_type, DatabaseType::MySQL);
     assert_eq!(info.host, "localhost");
@@ -269,7 +273,9 @@ fn test_sql_dialect_limit_clause() {
 #[test]
 fn test_sql_dialect_upsert_postgres() {
     let pg = SqlDialect::new(DialectType::PostgreSQL);
-    let upsert = pg.upsert_clause(&["email"], &["name", "updated_at"]).unwrap();
+    let upsert = pg
+        .upsert_clause(&["email"], &["name", "updated_at"])
+        .unwrap();
 
     assert!(upsert.contains("ON CONFLICT"));
     assert!(upsert.contains("email"));
@@ -280,7 +286,9 @@ fn test_sql_dialect_upsert_postgres() {
 #[test]
 fn test_sql_dialect_upsert_mysql() {
     let mysql = SqlDialect::new(DialectType::MySQL);
-    let upsert = mysql.upsert_clause(&["email"], &["name", "updated_at"]).unwrap();
+    let upsert = mysql
+        .upsert_clause(&["email"], &["name", "updated_at"])
+        .unwrap();
 
     assert!(upsert.contains("ON DUPLICATE KEY UPDATE"));
     assert!(upsert.contains("name = VALUES(name)"));
@@ -298,10 +306,16 @@ fn test_sql_dialect_upsert_sqlite() {
 #[test]
 fn test_sql_dialect_returning_clause() {
     let pg = SqlDialect::new(DialectType::PostgreSQL);
-    assert_eq!(pg.returning_clause(&["id", "created_at"]), Some("RETURNING id, created_at".to_string()));
+    assert_eq!(
+        pg.returning_clause(&["id", "created_at"]),
+        Some("RETURNING id, created_at".to_string())
+    );
 
     let sqlite = SqlDialect::new(DialectType::SQLite);
-    assert_eq!(sqlite.returning_clause(&["id"]), Some("RETURNING id".to_string()));
+    assert_eq!(
+        sqlite.returning_clause(&["id"]),
+        Some("RETURNING id".to_string())
+    );
 
     let mysql = SqlDialect::new(DialectType::MySQL);
     assert_eq!(mysql.returning_clause(&["id"]), None);
@@ -324,11 +338,7 @@ fn test_sql_dialect_feature_support() {
 
 #[test]
 fn test_connection_info_creation() {
-    let info = ConnectionInfo::new(
-        DatabaseType::PostgreSQL,
-        "localhost",
-        "mydb"
-    );
+    let info = ConnectionInfo::new(DatabaseType::PostgreSQL, "localhost", "mydb");
 
     assert_eq!(info.db_type, DatabaseType::PostgreSQL);
     assert_eq!(info.host, "localhost");
@@ -360,8 +370,7 @@ fn test_connection_pool_get_and_release() {
 
 #[test]
 fn test_connection_pool_multiple_connections() {
-    let config = DatabaseConfig::new("sqlite::memory:")
-        .max_connections(3);
+    let config = DatabaseConfig::new("sqlite::memory:").max_connections(3);
     let pool = ConnectionPool::new(config);
 
     let conn1 = pool.get().unwrap();
@@ -405,14 +414,16 @@ fn test_dialect_value_to_sql() {
     assert_eq!(pg.value_to_sql(&Value::Boolean(true)), "TRUE");
     assert_eq!(pg.value_to_sql(&Value::Boolean(false)), "FALSE");
     assert_eq!(pg.value_to_sql(&Value::Integer(42)), "42");
-    assert_eq!(pg.value_to_sql(&Value::Float(3.14)), "3.14");
-    assert_eq!(pg.value_to_sql(&Value::String("test".to_string())), "'test'");
+    assert_eq!(pg.value_to_sql(&Value::Float(3.15)), "3.15");
+    assert_eq!(
+        pg.value_to_sql(&Value::String("test".to_string())),
+        "'test'"
+    );
 }
 
 #[test]
 fn test_pool_stats_utilization() {
-    let config = DatabaseConfig::new("sqlite::memory:")
-        .max_connections(10);
+    let config = DatabaseConfig::new("sqlite::memory:").max_connections(10);
     let pool = ConnectionPool::new(config);
 
     // Get 5 connections (50% utilization)

@@ -118,10 +118,7 @@ impl MigrationRunner {
                     .and_then(|v| v.as_string())
                     .unwrap_or("")
                     .to_string(),
-                applied_at: row
-                    .get("applied_at")
-                    .and_then(|v| v.as_i64())
-                    .unwrap_or(0),
+                applied_at: row.get("applied_at").and_then(|v| v.as_i64()).unwrap_or(0),
                 batch: row.get("batch").and_then(|v| v.as_i64()).unwrap_or(0) as i32,
             })
             .collect())
@@ -209,10 +206,8 @@ impl MigrationRunner {
         // Get the last batch
         let last_batch = applied.iter().map(|m| m.batch).max().unwrap_or(0);
 
-        let to_rollback: Vec<&MigrationVersion> = applied
-            .iter()
-            .filter(|m| m.batch == last_batch)
-            .collect();
+        let to_rollback: Vec<&MigrationVersion> =
+            applied.iter().filter(|m| m.batch == last_batch).collect();
 
         let mut rolled_back = Vec::new();
 
@@ -231,11 +226,11 @@ impl MigrationRunner {
                 }
 
                 // Remove migration record
-                let delete_sql = format!(
-                    "DELETE FROM {} WHERE version = ?",
-                    self.migrations_table
-                );
-                conn.execute(&delete_sql, &[Value::String(migration.version().to_string())])?;
+                let delete_sql = format!("DELETE FROM {} WHERE version = ?", self.migrations_table);
+                conn.execute(
+                    &delete_sql,
+                    &[Value::String(migration.version().to_string())],
+                )?;
 
                 rolled_back.push(migration.version().to_string());
             }

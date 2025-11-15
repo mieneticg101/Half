@@ -3,9 +3,9 @@
 //! Provides high-performance response caching using the moka crate.
 
 use crate::{
+    Request, Response,
     error::Result,
     middleware::{Middleware, Next},
-    Request, Response,
 };
 use bytes::Bytes;
 use moka::future::Cache as MokaCache;
@@ -314,8 +314,8 @@ mod tests {
 
     #[test]
     fn test_cache_config_with_tti() {
-        let config = CacheConfig::new(500, Duration::from_secs(60))
-            .with_tti(Duration::from_secs(30));
+        let config =
+            CacheConfig::new(500, Duration::from_secs(60)).with_tti(Duration::from_secs(30));
 
         assert_eq!(config.max_capacity, 500);
         assert_eq!(config.ttl, Duration::from_secs(60));
@@ -324,9 +324,7 @@ mod tests {
 
     #[test]
     fn test_cache_exempt() {
-        let cache = Cache::new()
-            .exempt("/admin")
-            .exempt("/api/private");
+        let cache = Cache::new().exempt("/admin").exempt("/api/private");
 
         assert!(cache.is_exempt("/admin"));
         assert!(cache.is_exempt("/admin/users"));
@@ -353,11 +351,17 @@ mod tests {
     #[tokio::test]
     async fn test_cache_clear() {
         let cache = Cache::new();
-        cache.cache.insert("key1".to_string(), CachedResponse {
-            status: hyper::StatusCode::OK,
-            headers: hyper::HeaderMap::new(),
-            body: Bytes::from("test"),
-        }).await;
+        cache
+            .cache
+            .insert(
+                "key1".to_string(),
+                CachedResponse {
+                    status: hyper::StatusCode::OK,
+                    headers: hyper::HeaderMap::new(),
+                    body: Bytes::from("test"),
+                },
+            )
+            .await;
 
         // Note: entry_count() might not be updated immediately for moka caches
         // So we just verify the methods complete without panic

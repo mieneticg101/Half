@@ -3,11 +3,13 @@
 //! Provides abstractions for database connections, connection pooling,
 //! and transaction management.
 
+use crate::orm::drivers::{
+    DatabaseDriver, DatabaseType, MySqlDriver, PostgresDriver, SqliteDriver,
+};
+use crate::orm::model::{ModelError, Value};
+use parking_lot::RwLock;
 use std::collections::HashMap;
 use std::sync::Arc;
-use parking_lot::RwLock;
-use crate::orm::model::{Value, ModelError};
-use crate::orm::drivers::{DatabaseDriver, DatabaseType, PostgresDriver, MySqlDriver, SqliteDriver};
 
 /// Database configuration
 #[derive(Debug, Clone)]
@@ -228,18 +230,12 @@ impl PooledConnection {
 
     /// Get connection age in seconds
     pub fn age(&self) -> u64 {
-        self.created_at
-            .elapsed()
-            .unwrap_or_default()
-            .as_secs()
+        self.created_at.elapsed().unwrap_or_default().as_secs()
     }
 
     /// Get time since last use in seconds
     pub fn idle_time(&self) -> u64 {
-        self.last_used
-            .elapsed()
-            .unwrap_or_default()
-            .as_secs()
+        self.last_used.elapsed().unwrap_or_default().as_secs()
     }
 }
 

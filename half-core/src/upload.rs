@@ -120,8 +120,8 @@ pub struct UploadConfig {
 impl Default for UploadConfig {
     fn default() -> Self {
         Self {
-            max_file_size: 10 * 1024 * 1024,     // 10 MB
-            max_total_size: 100 * 1024 * 1024,   // 100 MB
+            max_file_size: 10 * 1024 * 1024,   // 10 MB
+            max_total_size: 100 * 1024 * 1024, // 100 MB
             allowed_types: Vec::new(),
             max_files: 10,
         }
@@ -171,10 +171,7 @@ impl UploadConfig {
         // Check content type
         if !self.allowed_types.is_empty() {
             if let Some(content_type) = &file.content_type {
-                let allowed = self
-                    .allowed_types
-                    .iter()
-                    .any(|t| content_type.contains(t));
+                let allowed = self.allowed_types.iter().any(|t| content_type.contains(t));
                 if !allowed {
                     return Err(UploadError::InvalidContentType);
                 }

@@ -2,7 +2,7 @@
 //!
 //! Apply middleware only when certain conditions are met.
 
-use crate::{middleware::Middleware, Request, Response, Result};
+use crate::{Request, Response, Result, middleware::Middleware};
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;

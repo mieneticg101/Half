@@ -177,11 +177,7 @@ impl BodyParser {
     }
 
     /// Parse body based on content type
-    pub fn parse(
-        &self,
-        body: &[u8],
-        content_type: Option<&str>,
-    ) -> Result<BodyData, BodyError> {
+    pub fn parse(&self, body: &[u8], content_type: Option<&str>) -> Result<BodyData, BodyError> {
         if let Some(ct) = content_type {
             if ct.contains("application/json") {
                 let value: serde_json::Value = self.parse_json(body, Some(ct))?;
@@ -290,9 +286,7 @@ mod tests {
         let parser = BodyParser::default();
         let body = r#"{"name":"John","age":30}"#.as_bytes();
 
-        let result: serde_json::Value = parser
-            .parse_json(body, Some("application/json"))
-            .unwrap();
+        let result: serde_json::Value = parser.parse_json(body, Some("application/json")).unwrap();
 
         assert_eq!(result["name"], "John");
         assert_eq!(result["age"], 30);
@@ -303,8 +297,7 @@ mod tests {
         let parser = BodyParser::default();
         let body = r#"{"name":"John"}"#.as_bytes();
 
-        let result: Result<serde_json::Value, _> =
-            parser.parse_json(body, Some("text/plain"));
+        let result: Result<serde_json::Value, _> = parser.parse_json(body, Some("text/plain"));
 
         assert!(result.is_err());
     }

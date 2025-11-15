@@ -105,8 +105,8 @@ impl SignedCookieJar {
 
     /// Sign a cookie value
     fn sign(&self, value: &str) -> String {
-        use sha2::{Sha256, Digest};
         use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
+        use sha2::{Digest, Sha256};
 
         let mut hasher = Sha256::new();
         hasher.update(value.as_bytes());

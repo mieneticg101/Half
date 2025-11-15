@@ -233,9 +233,9 @@ impl Column {
 
     /// Check if column has a specific constraint
     pub fn has_constraint(&self, constraint_type: &Constraint) -> bool {
-        self.constraints.iter().any(|c| {
-            std::mem::discriminant(c) == std::mem::discriminant(constraint_type)
-        })
+        self.constraints
+            .iter()
+            .any(|c| std::mem::discriminant(c) == std::mem::discriminant(constraint_type))
     }
 }
 
@@ -551,27 +551,23 @@ impl TableBuilder {
     /// Set default value for the last added column
     pub fn default(&mut self, value: &str) -> &mut Self {
         if let Some((_, column)) = self.table.columns.iter_mut().last() {
-            column.constraints.push(Constraint::Default(value.to_string()));
+            column
+                .constraints
+                .push(Constraint::Default(value.to_string()));
         }
         self
     }
 
     /// Add an index
     pub fn index(&mut self, name: &str, columns: Vec<&str>) -> &mut Self {
-        let index = Index::new(
-            name,
-            columns.iter().map(|s| s.to_string()).collect(),
-        );
+        let index = Index::new(name, columns.iter().map(|s| s.to_string()).collect());
         self.table.indexes.push(index);
         self
     }
 
     /// Add a unique index
     pub fn unique_index(&mut self, name: &str, columns: Vec<&str>) -> &mut Self {
-        let index = Index::unique(
-            name,
-            columns.iter().map(|s| s.to_string()).collect(),
-        );
+        let index = Index::unique(name, columns.iter().map(|s| s.to_string()).collect());
         self.table.indexes.push(index);
         self
     }
@@ -621,8 +617,12 @@ mod tests {
 
     #[test]
     fn test_foreign_key() {
-        let column = Column::new("user_id", ColumnType::Integer)
-            .foreign_key("users", "id", Some(ForeignKeyAction::Cascade), None);
+        let column = Column::new("user_id", ColumnType::Integer).foreign_key(
+            "users",
+            "id",
+            Some(ForeignKeyAction::Cascade),
+            None,
+        );
 
         let sql = column.to_sql();
         assert!(sql.contains("REFERENCES users(id)"));

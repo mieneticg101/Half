@@ -67,9 +67,8 @@ pub struct HealthResponse {
 }
 
 /// Health check function type
-pub type HealthCheckFn = Box<
-    dyn Fn() -> Pin<Box<dyn Future<Output = Result<ComponentHealth>> + Send>> + Send + Sync,
->;
+pub type HealthCheckFn =
+    Box<dyn Fn() -> Pin<Box<dyn Future<Output = Result<ComponentHealth>> + Send>> + Send + Sync>;
 
 /// Health check manager
 ///
@@ -219,7 +218,9 @@ impl Default for HealthCheck {
 }
 
 /// Create a simple health check that always returns healthy
-pub fn simple_health_check(name: impl Into<String>) -> impl Fn() -> Pin<Box<dyn Future<Output = Result<ComponentHealth>> + Send>> + Send + Sync {
+pub fn simple_health_check(
+    name: impl Into<String>,
+) -> impl Fn() -> Pin<Box<dyn Future<Output = Result<ComponentHealth>> + Send>> + Send + Sync {
     let name = name.into();
     move || {
         let name = name.clone();
@@ -287,14 +288,16 @@ mod tests {
     async fn test_add_healthy_check() {
         let mut health = HealthCheck::new();
 
-        health.add_check("test", || async {
-            Ok(ComponentHealth {
-                name: "test".to_string(),
-                status: HealthStatus::Healthy,
-                message: None,
-                response_time_ms: Some(1),
+        health
+            .add_check("test", || async {
+                Ok(ComponentHealth {
+                    name: "test".to_string(),
+                    status: HealthStatus::Healthy,
+                    message: None,
+                    response_time_ms: Some(1),
+                })
             })
-        }).await;
+            .await;
 
         let response = health.check().await;
         assert_eq!(response.status, HealthStatus::Healthy);
@@ -305,14 +308,16 @@ mod tests {
     async fn test_add_unhealthy_check() {
         let mut health = HealthCheck::new();
 
-        health.add_check("failing", || async {
-            Ok(ComponentHealth {
-                name: "failing".to_string(),
-                status: HealthStatus::Unhealthy,
-                message: Some("Failed".to_string()),
-                response_time_ms: None,
+        health
+            .add_check("failing", || async {
+                Ok(ComponentHealth {
+                    name: "failing".to_string(),
+                    status: HealthStatus::Unhealthy,
+                    message: Some("Failed".to_string()),
+                    response_time_ms: None,
+                })
             })
-        }).await;
+            .await;
 
         let response = health.check().await;
         assert_eq!(response.status, HealthStatus::Unhealthy);

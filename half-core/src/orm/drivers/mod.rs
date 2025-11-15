@@ -3,15 +3,15 @@
 //! Provides support for PostgreSQL, MySQL, SQLite, and other databases
 //! similar to Prisma's multi-database support.
 
-pub mod postgres;
-pub mod mysql;
-pub mod sqlite;
 pub mod dialect;
+pub mod mysql;
+pub mod postgres;
+pub mod sqlite;
 
-pub use postgres::PostgresDriver;
+pub use dialect::{DialectType, SqlDialect};
 pub use mysql::MySqlDriver;
+pub use postgres::PostgresDriver;
 pub use sqlite::SqliteDriver;
-pub use dialect::{SqlDialect, DialectType};
 
 use crate::orm::connection::{Connection, ConnectionError};
 use std::collections::HashMap;
@@ -110,7 +110,11 @@ pub struct ConnectionInfo {
 
 impl ConnectionInfo {
     /// Create a new connection info
-    pub fn new(db_type: DatabaseType, host: impl Into<String>, database: impl Into<String>) -> Self {
+    pub fn new(
+        db_type: DatabaseType,
+        host: impl Into<String>,
+        database: impl Into<String>,
+    ) -> Self {
         Self {
             db_type,
             host: host.into(),
@@ -171,10 +175,14 @@ impl ConnectionInfo {
             String::new()
         };
 
-        let mut url = format!("{}://{}{}:{}/{}", scheme, auth, self.host, self.port, self.database);
+        let mut url = format!(
+            "{}://{}{}:{}/{}",
+            scheme, auth, self.host, self.port, self.database
+        );
 
         if !self.options.is_empty() {
-            let opts: Vec<String> = self.options
+            let opts: Vec<String> = self
+                .options
                 .iter()
                 .map(|(k, v)| format!("{}={}", k, v))
                 .collect();

@@ -210,7 +210,11 @@ impl SqlDialect {
     /// PostgreSQL: ON CONFLICT ... DO UPDATE
     /// MySQL: ON DUPLICATE KEY UPDATE
     /// SQLite: ON CONFLICT ... DO UPDATE
-    pub fn upsert_clause(&self, conflict_columns: &[&str], update_columns: &[&str]) -> Option<String> {
+    pub fn upsert_clause(
+        &self,
+        conflict_columns: &[&str],
+        update_columns: &[&str],
+    ) -> Option<String> {
         match self.dialect_type {
             DialectType::PostgreSQL | DialectType::SQLite => {
                 let updates = update_columns
@@ -384,7 +388,10 @@ mod tests {
         let pg = SqlDialect::new(DialectType::PostgreSQL);
         assert_eq!(
             pg.upsert_clause(&["id"], &["name", "email"]),
-            Some("ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, email = EXCLUDED.email".to_string())
+            Some(
+                "ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, email = EXCLUDED.email"
+                    .to_string()
+            )
         );
 
         let mysql = SqlDialect::new(DialectType::MySQL);
@@ -398,7 +405,10 @@ mod tests {
     fn test_value_to_sql() {
         let pg = SqlDialect::new(DialectType::PostgreSQL);
         assert_eq!(pg.value_to_sql(&Value::Integer(42)), "42");
-        assert_eq!(pg.value_to_sql(&Value::String("test".to_string())), "'test'");
+        assert_eq!(
+            pg.value_to_sql(&Value::String("test".to_string())),
+            "'test'"
+        );
         assert_eq!(pg.value_to_sql(&Value::Boolean(true)), "TRUE");
         assert_eq!(pg.value_to_sql(&Value::Null), "NULL");
 

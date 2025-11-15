@@ -2,7 +2,7 @@
 //!
 //! Run with: cargo run --example hello
 
-use half_core::{Router, Server, Request, Response};
+use half_core::{Request, Response, Router, Server};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

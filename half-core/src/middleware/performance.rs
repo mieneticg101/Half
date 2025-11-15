@@ -2,11 +2,11 @@
 //!
 //! Tracks request performance metrics such as duration, sizes, and throughput.
 
-use crate::{middleware::Middleware, Request, Response, Result};
+use crate::{Request, Response, Result, middleware::Middleware};
 use std::future::Future;
 use std::pin::Pin;
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Instant;
 
 /// Performance monitoring middleware configuration
@@ -125,17 +125,14 @@ impl PerformanceStats {
     }
 
     /// Record a request
-    fn record(
-        &self,
-        duration_ms: u64,
-        is_slow: bool,
-        request_bytes: usize,
-        response_bytes: usize,
-    ) {
+    fn record(&self, duration_ms: u64, is_slow: bool, request_bytes: usize, response_bytes: usize) {
         self.total_requests.fetch_add(1, Ordering::Relaxed);
-        self.total_duration_ms.fetch_add(duration_ms, Ordering::Relaxed);
-        self.total_request_bytes.fetch_add(request_bytes as u64, Ordering::Relaxed);
-        self.total_response_bytes.fetch_add(response_bytes as u64, Ordering::Relaxed);
+        self.total_duration_ms
+            .fetch_add(duration_ms, Ordering::Relaxed);
+        self.total_request_bytes
+            .fetch_add(request_bytes as u64, Ordering::Relaxed);
+        self.total_response_bytes
+            .fetch_add(response_bytes as u64, Ordering::Relaxed);
 
         if is_slow {
             self.slow_requests.fetch_add(1, Ordering::Relaxed);
@@ -228,9 +225,7 @@ impl Middleware for PerformanceMonitor {
             let is_slow = duration_ms >= config.slow_threshold_ms;
 
             // Get response size
-            let response_size = result.as_ref()
-                .map(|r| r.get_body().len())
-                .unwrap_or(0);
+            let response_size = result.as_ref().map(|r| r.get_body().len()).unwrap_or(0);
 
             // Record statistics
             stats.record(duration_ms, is_slow, request_size, response_size);

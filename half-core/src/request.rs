@@ -5,7 +5,7 @@
 use crate::error::{Error, Result};
 use bytes::Bytes;
 use http_body_util::BodyExt;
-use hyper::{body::Incoming, Method, Uri, HeaderMap, Version};
+use hyper::{HeaderMap, Method, Uri, Version, body::Incoming};
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 
@@ -66,10 +66,7 @@ impl Request {
         }
 
         // Parse query parameters with limit
-        let query = uri
-            .query()
-            .map(Self::parse_query)
-            .unwrap_or_default();
+        let query = uri.query().map(Self::parse_query).unwrap_or_default();
 
         // Validate query parameter count
         if query.len() > MAX_QUERY_PARAMS {
@@ -118,9 +115,7 @@ impl Request {
 
     /// Get a specific header value
     pub fn header(&self, name: &str) -> Option<&str> {
-        self.headers
-            .get(name)
-            .and_then(|v| v.to_str().ok())
+        self.headers.get(name).and_then(|v| v.to_str().ok())
     }
 
     /// Get the Content-Type header
@@ -154,13 +149,12 @@ impl Request {
                 if let Some(ct) = self.content_type() {
                     if !ct.contains("application/json") {
                         return Err(Error::BadRequest(
-                            "Expected application/json content type".into()
+                            "Expected application/json content type".into(),
                         ));
                     }
                 }
 
-                serde_json::from_slice(bytes)
-                    .map_err(Error::Json)
+                serde_json::from_slice(bytes).map_err(Error::Json)
             }
             None => Err(Error::BadRequest("Empty body".into())),
         }
@@ -198,10 +192,7 @@ impl Request {
             .parse()
             .map_err(|e| Error::BadRequest(format!("Invalid URI: {}", e)))?;
 
-        let query = uri
-            .query()
-            .map(Self::parse_query)
-            .unwrap_or_default();
+        let query = uri.query().map(Self::parse_query).unwrap_or_default();
 
         Ok(Request {
             method,
@@ -306,11 +297,7 @@ impl Request {
                 .split(',')
                 .map(|s| {
                     // Remove quality values (q=0.9) and whitespace
-                    s.split(';')
-                        .next()
-                        .unwrap_or("")
-                        .trim()
-                        .to_string()
+                    s.split(';').next().unwrap_or("").trim().to_string()
                 })
                 .filter(|s| !s.is_empty())
                 .collect()
@@ -408,7 +395,9 @@ impl Request {
                 let decoded_value = Self::decode_uri_component(&value);
 
                 // Validate decoded length as well
-                if decoded_key.len() > MAX_QUERY_PARAM_LENGTH || decoded_value.len() > MAX_QUERY_PARAM_LENGTH {
+                if decoded_key.len() > MAX_QUERY_PARAM_LENGTH
+                    || decoded_value.len() > MAX_QUERY_PARAM_LENGTH
+                {
                     return None;
                 }
 
@@ -426,7 +415,6 @@ impl Request {
             .decode_utf8_lossy()
             .into_owned()
     }
-
 }
 
 #[cfg(test)]
@@ -445,7 +433,10 @@ mod tests {
 
     #[test]
     fn test_decode_uri_component() {
-        assert_eq!(Request::decode_uri_component("hello%20world"), "hello world");
+        assert_eq!(
+            Request::decode_uri_component("hello%20world"),
+            "hello world"
+        );
         assert_eq!(Request::decode_uri_component("foo%2Fbar"), "foo/bar");
     }
 
@@ -484,7 +475,10 @@ mod tests {
     #[test]
     fn test_is_mobile() {
         let mut req = Request::from_path_and_method("/test", Method::GET).unwrap();
-        req.set_header("user-agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)");
+        req.set_header(
+            "user-agent",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)",
+        );
 
         assert!(req.is_mobile());
 

@@ -1,5 +1,5 @@
-use base64::{engine::general_purpose::STANDARD, Engine};
-use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation, Algorithm};
+use base64::{Engine, engine::general_purpose::STANDARD};
+use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -202,8 +202,7 @@ impl BasicAuth {
             .decode(encoded)
             .map_err(|_| AuthError::InvalidAuthFormat)?;
 
-        let decoded_str =
-            String::from_utf8(decoded).map_err(|_| AuthError::InvalidAuthFormat)?;
+        let decoded_str = String::from_utf8(decoded).map_err(|_| AuthError::InvalidAuthFormat)?;
 
         let parts: Vec<&str> = decoded_str.splitn(2, ':').collect();
         if parts.len() != 2 {

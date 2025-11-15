@@ -5,7 +5,7 @@
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, ItemFn, LitStr, parse::Parse, parse::ParseStream, Token};
+use syn::{ItemFn, LitStr, Token, parse::Parse, parse::ParseStream, parse_macro_input};
 
 mod route;
 
@@ -22,7 +22,7 @@ enum HttpMethod {
 }
 
 impl HttpMethod {
-    fn as_str(&self) -> &'static str {
+    fn as_str(self) -> &'static str {
         match self {
             HttpMethod::Get => "GET",
             HttpMethod::Post => "POST",
@@ -55,10 +55,12 @@ impl Parse for RouteArgs {
             "PATCH" => HttpMethod::Patch,
             "HEAD" => HttpMethod::Head,
             "OPTIONS" => HttpMethod::Options,
-            _ => return Err(syn::Error::new_spanned(
-                method_ident,
-                "Invalid HTTP method. Use GET, POST, PUT, DELETE, PATCH, HEAD, or OPTIONS"
-            )),
+            _ => {
+                return Err(syn::Error::new_spanned(
+                    method_ident,
+                    "Invalid HTTP method. Use GET, POST, PUT, DELETE, PATCH, HEAD, or OPTIONS",
+                ));
+            }
         };
 
         Ok(RouteArgs {
