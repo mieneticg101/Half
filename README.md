@@ -7,9 +7,9 @@ A **lightweight**, **secure**, and **high-performance** Rust web framework with 
 [![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
 [![Edition](https://img.shields.io/badge/edition-2024-green.svg)](https://doc.rust-lang.org/edition-guide/rust-2024/)
-[![Version](https://img.shields.io/badge/version-0.13.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.14.0-blue.svg)](CHANGELOG.md)
 [![TLS](https://img.shields.io/badge/TLS-1.3-green.svg)](https://tools.ietf.org/html/rfc8446)
-[![Tests](https://img.shields.io/badge/tests-278%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-304%20passing-brightgreen.svg)]()
 
 </div>
 
@@ -92,7 +92,7 @@ Add Half to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-half-core = "0.13"
+half-core = "0.14"
 tokio = { version = "1.42", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -139,6 +139,32 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 ## 🗄️ ORM Usage
+
+### Database Connection
+
+Connect to any supported database (PostgreSQL, MySQL, SQLite):
+
+```rust
+use half_core::orm::{DatabaseConfig, ConnectionPool};
+
+// SQLite (easiest for development)
+let config = DatabaseConfig::new("sqlite://./app.db")
+    .max_connections(5);
+
+// PostgreSQL
+let config = DatabaseConfig::new("postgresql://user:pass@localhost:5432/mydb")
+    .max_connections(10);
+
+// MySQL
+let config = DatabaseConfig::new("mysql://user:pass@localhost:3306/mydb")
+    .max_connections(10);
+
+// Create connection pool (auto-detects driver from URL)
+let pool = ConnectionPool::new(config);
+println!("Connected to: {:?}", pool.database_type());
+```
+
+> **Note:** For production use, you'll need to add a database driver like `sqlx`, `tokio-postgres`, or `rusqlite` to your dependencies. See [GETTING_STARTED.md](GETTING_STARTED.md) for complete setup instructions.
 
 ### Define Models
 
@@ -598,9 +624,10 @@ half migrate status
 
 ## 📖 Documentation
 
-- [Changelog](CHANGELOG.md) - Version history and changes
-- [Performance](PERFORMANCE.md) - Performance optimizations guide
+- **[Getting Started](GETTING_STARTED.md)** - Complete setup and usage guide
 - [Multi-Database Support](MULTI_DATABASE.md) - PostgreSQL, MySQL, SQLite guide
+- [Performance](PERFORMANCE.md) - Performance optimizations guide
+- [Changelog](CHANGELOG.md) - Version history and changes
 - [Examples](examples/) - Code examples
 - API Documentation (run `cargo doc --open`)
 
