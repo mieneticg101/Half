@@ -76,27 +76,31 @@ pub type HealthCheckFn = Box<
 /// Manages health checks for the application and its components.
 ///
 /// # Example
-/// ```no_run
+/// ```
 /// use half_core::health::{HealthCheck, HealthStatus, ComponentHealth};
 ///
-/// let mut health = HealthCheck::new()
-///     .version("1.0.0");
+/// #[tokio::main]
+/// async fn main() {
+///     let mut health = HealthCheck::new()
+///         .version("1.0.0");
 ///
-/// // Add database health check
-/// health.add_check("database", || {
-///     Box::pin(async {
-///         // Check database connection
-///         Ok(ComponentHealth {
-///             name: "database".to_string(),
-///             status: HealthStatus::Healthy,
-///             message: Some("Connected".to_string()),
-///             response_time_ms: Some(5),
+///     // Add database health check
+///     health.add_check("database", || {
+///         Box::pin(async {
+///             // Check database connection
+///             Ok(ComponentHealth {
+///                 name: "database".to_string(),
+///                 status: HealthStatus::Healthy,
+///                 message: Some("Connected".to_string()),
+///                 response_time_ms: Some(5),
+///             })
 ///         })
-///     })
-/// });
+///     });
 ///
-/// // Get health status
-/// let response = health.check().await;
+///     // Get health status
+///     let response = health.check().await;
+///     assert_eq!(response.status, HealthStatus::Healthy);
+/// }
 /// ```
 pub struct HealthCheck {
     start_time: Instant,

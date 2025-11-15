@@ -135,28 +135,32 @@ impl Default for SessionConfig {
 /// use half_core::session::{SessionStore, SessionConfig};
 /// use std::time::Duration;
 ///
-/// let store = SessionStore::new(SessionConfig {
-///     ttl: Duration::from_secs(3600),
-///     ..Default::default()
-/// });
+/// #[tokio::main]
+/// async fn main() {
+///     let store = SessionStore::new(SessionConfig {
+///         ttl: Duration::from_secs(3600),
+///         ..Default::default()
+///     });
 ///
-/// // Create a new session
-/// let session_id = store.create_session();
+///     // Create a new session
+///     let session_id = store.create_session();
 ///
-/// // Get and modify session
-/// if let Some(mut session) = store.get_session(&session_id) {
-///     session.set("user_id", "123");
-///     session.set("username", "alice");
+///     // Get and modify session
+///     if let Some(mut session) = store.get_session(&session_id) {
+///         session.set("user_id", "123");
+///         session.set("username", "alice");
+///         store.update_session(session);
+///     }
+///
+///     // Retrieve session data
+///     if let Some(session) = store.get_session(&session_id) {
+///         let user_id = session.get("user_id");
+///         assert_eq!(user_id.map(|s| s.as_str()), Some("123"));
+///     }
+///
+///     // Destroy session
+///     store.destroy_session(&session_id);
 /// }
-///
-/// // Retrieve session data
-/// if let Some(session) = store.get_session(&session_id) {
-///     let user_id = session.get("user_id");
-///     println!("User ID: {:?}", user_id);
-/// }
-///
-/// // Destroy session
-/// store.destroy_session(&session_id);
 /// ```
 pub struct SessionStore {
     sessions: Arc<DashMap<SessionId, Session>>,
