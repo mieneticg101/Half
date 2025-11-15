@@ -73,6 +73,7 @@ pub mod health;
 pub mod logging;
 pub mod metrics;
 pub mod middleware;
+pub mod orm;
 pub mod request;
 pub mod response;
 pub mod router;
@@ -94,6 +95,14 @@ pub use config::{Config, ConfigBuilder, Environment};
 pub use cookies::{CookieJar, SignedCookieJar, CookieBuilder};
 pub use database::{QueryBuilder, QueryParams, Order, JoinType};
 pub use error::{Error, Result};
+pub use orm::{
+    connection::{Connection, ConnectionPool, DatabaseConfig, Transaction, ConnectionError},
+    model::{Model, Entity, Value, ModelError, ModelBuilder},
+    query::{Query, QueryExecutor, Insert, Update, Delete},
+    schema::{Schema, Table, Column, ColumnType, Constraint, Index, ForeignKeyAction},
+    migrations::{Migration, MigrationRunner, MigrationVersion, MigrationBuilder},
+    relations::{Relation, RelationType, HasOne, HasMany, BelongsTo, BelongsToMany},
+};
 pub use handler::Handler;
 pub use health::{HealthCheck, HealthResponse, HealthStatus, ComponentHealth};
 pub use logging::{LogConfig, RequestLogger, MetricsLogger};
@@ -129,10 +138,19 @@ pub mod prelude {
         auth::{JwtAuth, BasicAuth, ApiKeyAuth, Claims, AuthError},
         body::{BodyParser, BodyConfig, BodyData, BodyError},
         cookies::{CookieJar, SignedCookieJar, CookieBuilder},
+        database::{QueryBuilder, QueryParams, Order, JoinType},
         error::{Error, Result},
         handler::Handler,
         logging::{LogConfig, RequestLogger, MetricsLogger},
         middleware::Middleware,
+        orm::{
+            connection::{Connection, ConnectionPool, DatabaseConfig},
+            model::{Model, Entity, Value},
+            query::{Query, Insert, Update, Delete},
+            schema::{Schema, Table, Column, ColumnType},
+            migrations::{Migration, MigrationRunner},
+            relations::{HasOne, HasMany, BelongsTo, BelongsToMany},
+        },
         request::Request,
         response::{Cookie, Response, SameSite},
         router::Router,
