@@ -25,8 +25,8 @@ pub struct CsrfToken {
 impl CsrfToken {
     /// Generate a new CSRF token
     pub fn generate(secret: &[u8]) -> Self {
-        let mut rng = rand::thread_rng();
-        let random_bytes: [u8; 32] = rng.gen();
+        let mut rng = rand::rng();
+        let random_bytes: [u8; 32] = rng.random();
 
         // Create HMAC of random bytes with secret
         let mut mac = HmacSha256::new_from_slice(secret)

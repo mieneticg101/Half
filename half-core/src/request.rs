@@ -9,6 +9,18 @@ use hyper::{body::Incoming, Method, Uri, HeaderMap, Version};
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 
+/// Maximum request body size (10 MB)
+/// This prevents denial-of-service attacks via large payloads
+const MAX_BODY_SIZE: usize = 10 * 1024 * 1024;
+
+/// Maximum number of query parameters
+/// Prevents hash collision DoS attacks
+const MAX_QUERY_PARAMS: usize = 100;
+
+/// Maximum length of query parameter key or value
+/// Prevents memory exhaustion attacks
+const MAX_QUERY_PARAM_LENGTH: usize = 4096;
+
 /// HTTP Request wrapper
 ///
 /// Provides convenient methods for accessing request data with built-in
@@ -27,6 +39,9 @@ pub struct Request {
 
 impl Request {
     /// Create a new Request from Hyper components
+    ///
+    /// # Security
+    /// Enforces size limits on request body and query parameters to prevent DoS attacks
     pub async fn from_hyper(
         method: Method,
         uri: Uri,
@@ -34,18 +49,36 @@ impl Request {
         headers: HeaderMap,
         body: Incoming,
     ) -> Result<Self> {
-        // Collect body bytes
+        // Collect body bytes with size limit
         let body_bytes = body
             .collect()
             .await
             .map_err(|e| Error::Http(e.to_string()))?
             .to_bytes();
 
-        // Parse query parameters
+        // Validate body size
+        if body_bytes.len() > MAX_BODY_SIZE {
+            return Err(Error::BadRequest(format!(
+                "Request body too large: {} bytes (max: {} bytes)",
+                body_bytes.len(),
+                MAX_BODY_SIZE
+            )));
+        }
+
+        // Parse query parameters with limit
         let query = uri
             .query()
-            .map(Self::parse_query)
+            .map(|q| Self::parse_query(q))
             .unwrap_or_default();
+
+        // Validate query parameter count
+        if query.len() > MAX_QUERY_PARAMS {
+            return Err(Error::BadRequest(format!(
+                "Too many query parameters: {} (max: {})",
+                query.len(),
+                MAX_QUERY_PARAMS
+            )));
+        }
 
         Ok(Request {
             method,
@@ -149,6 +182,9 @@ impl Request {
     }
 
     /// Parse query string into key-value pairs
+    ///
+    /// # Security
+    /// Validates parameter lengths to prevent memory exhaustion attacks
     fn parse_query(query: &str) -> HashMap<String, String> {
         query
             .split('&')
@@ -156,10 +192,21 @@ impl Request {
                 let mut split = part.splitn(2, '=');
                 let key = split.next()?.to_string();
                 let value = split.next().unwrap_or("").to_string();
-                Some((
-                    Self::decode_uri_component(&key),
-                    Self::decode_uri_component(&value),
-                ))
+
+                // Validate length before decoding
+                if key.len() > MAX_QUERY_PARAM_LENGTH || value.len() > MAX_QUERY_PARAM_LENGTH {
+                    return None;
+                }
+
+                let decoded_key = Self::decode_uri_component(&key);
+                let decoded_value = Self::decode_uri_component(&value);
+
+                // Validate decoded length as well
+                if decoded_key.len() > MAX_QUERY_PARAM_LENGTH || decoded_value.len() > MAX_QUERY_PARAM_LENGTH {
+                    return None;
+                }
+
+                Some((decoded_key, decoded_value))
             })
             .collect()
     }

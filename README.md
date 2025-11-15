@@ -5,7 +5,9 @@
 A **lightweight**, **secure**, and **high-performance** Rust web framework.
 
 [![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
-[![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org)
+[![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
+[![Edition](https://img.shields.io/badge/edition-2024-green.svg)](https://doc.rust-lang.org/edition-guide/rust-2024/)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](CHANGELOG.md)
 
 </div>
 
@@ -20,11 +22,14 @@ A **lightweight**, **secure**, and **high-performance** Rust web framework.
 
 ## 📦 Installation
 
+**Requirements:**
+- Rust 1.85+ (for edition 2024 support)
+
 Add Half to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-half-core = "0.1"
+half-core = "0.2"
 tokio = { version = "1.42", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -271,10 +276,12 @@ cargo test -p half-cli
 
 Half is designed for maximum performance:
 
-- **Fast routing**: O(n) route matching with path parameters
+- **Fast routing**: O(1) HashMap lookup for exact routes, O(n) for parameterized routes
+- **Iterator-based matching**: Zero-allocation path matching using iterators
 - **Async/await**: Built on Tokio for efficient concurrency
-- **Zero-copy**: Minimal data copying in request/response handling
+- **Minimal allocations**: Optimized hot paths to reduce heap allocations
 - **Small binaries**: Optimized release builds with LTO and strip
+- **Security without overhead**: Built-in protections with minimal runtime cost
 
 ## 🤝 Contributing
 

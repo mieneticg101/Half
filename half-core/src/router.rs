@@ -26,8 +26,14 @@ pub(crate) struct Route {
 ///
 /// The router matches incoming requests to registered handlers based on
 /// HTTP method and path patterns.
+///
+/// # Performance
+/// Uses a HashMap for exact match routes (O(1) lookup) and falls back to
+/// pattern matching for routes with parameters (O(n) lookup).
 pub struct Router {
     pub(crate) routes: Vec<Route>,
+    /// Fast lookup for exact match routes (no parameters)
+    exact_routes: HashMap<String, usize>,
     global_middlewares: Vec<BoxedMiddleware>,
     not_found_handler: Option<Arc<HandlerWrapper>>,
 }
@@ -37,6 +43,7 @@ impl Router {
     pub fn new() -> Self {
         Self {
             routes: Vec::new(),
+            exact_routes: HashMap::new(),
             global_middlewares: Vec::new(),
             not_found_handler: None,
         }
@@ -47,9 +54,18 @@ impl Router {
     where
         H: Handler,
     {
+        let path = path.into();
+        let route_index = self.routes.len();
+
+        // Check if this is an exact match route (no parameters)
+        if !path.contains(':') {
+            let key = format!("{} {}", method.as_str(), path);
+            self.exact_routes.insert(key, route_index);
+        }
+
         self.routes.push(Route {
             method,
-            path: path.into(),
+            path,
             handler: Arc::new(HandlerWrapper::new(handler)),
             middlewares: Vec::new(),
         });
@@ -145,13 +161,31 @@ impl Router {
     }
 
     /// Find a matching route for the request
+    ///
+    /// # Performance
+    /// First tries O(1) HashMap lookup for exact matches,
+    /// then falls back to O(n) pattern matching for parameterized routes
     fn find_route(&self, req: &Request) -> Option<(&Route, HashMap<String, String>)> {
         let path = req.path();
         let method = req.method();
 
+        // Try fast exact match first
+        let key = format!("{} {}", method.as_str(), path);
+        if let Some(&index) = self.exact_routes.get(&key) {
+            if let Some(route) = self.routes.get(index) {
+                return Some((route, HashMap::new()));
+            }
+        }
+
+        // Fall back to pattern matching for parameterized routes
         for route in &self.routes {
             // Check method match
             if &route.method != method {
+                continue;
+            }
+
+            // Skip exact matches (already checked above)
+            if !route.path.contains(':') {
                 continue;
             }
 
@@ -167,29 +201,37 @@ impl Router {
     /// Match a route pattern against a request path
     ///
     /// Supports path parameters like `/users/:id`
+    ///
+    /// # Performance
+    /// Uses iterators instead of Vec allocation for better performance
     fn match_path(pattern: &str, path: &str) -> Option<HashMap<String, String>> {
-        let pattern_parts: Vec<&str> = pattern.split('/').filter(|s| !s.is_empty()).collect();
-        let path_parts: Vec<&str> = path.split('/').filter(|s| !s.is_empty()).collect();
-
-        // Must have same number of parts
-        if pattern_parts.len() != path_parts.len() {
-            return None;
-        }
+        let mut pattern_parts = pattern.split('/').filter(|s| !s.is_empty());
+        let mut path_parts = path.split('/').filter(|s| !s.is_empty());
 
         let mut params = HashMap::new();
 
-        for (pattern_part, path_part) in pattern_parts.iter().zip(path_parts.iter()) {
-            if pattern_part.starts_with(':') {
-                // This is a parameter
-                let param_name = &pattern_part[1..]; // Remove the ':'
-                params.insert(param_name.to_string(), path_part.to_string());
-            } else if pattern_part != path_part {
-                // Static parts must match exactly
-                return None;
+        loop {
+            match (pattern_parts.next(), path_parts.next()) {
+                (Some(pattern_part), Some(path_part)) => {
+                    if pattern_part.starts_with(':') {
+                        // This is a parameter
+                        let param_name = &pattern_part[1..]; // Remove the ':'
+                        params.insert(param_name.to_string(), path_part.to_string());
+                    } else if pattern_part != path_part {
+                        // Static parts must match exactly
+                        return None;
+                    }
+                }
+                (None, None) => {
+                    // Both iterators exhausted at the same time - match!
+                    return Some(params);
+                }
+                _ => {
+                    // Different number of parts - no match
+                    return None;
+                }
             }
         }
-
-        Some(params)
     }
 
     /// Apply middlewares and execute handler

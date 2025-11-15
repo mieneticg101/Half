@@ -23,11 +23,52 @@ pub struct Response {
 impl Response {
     /// Create a new response with 200 OK status
     pub fn new() -> Self {
-        Self {
+        let mut response = Self {
             status: StatusCode::OK,
             headers: HeaderMap::new(),
             body: Bytes::new(),
-        }
+        };
+        response.apply_security_headers();
+        response
+    }
+
+    /// Apply security headers to the response
+    ///
+    /// Adds important security headers to prevent common attacks:
+    /// - X-Content-Type-Options: nosniff
+    /// - X-Frame-Options: DENY
+    /// - Referrer-Policy: strict-origin-when-cross-origin
+    /// - Permissions-Policy: restricts browser features
+    fn apply_security_headers(&mut self) {
+        // Prevent MIME sniffing
+        self.headers.insert(
+            HeaderName::from_static("x-content-type-options"),
+            HeaderValue::from_static("nosniff"),
+        );
+
+        // Prevent clickjacking
+        self.headers.insert(
+            HeaderName::from_static("x-frame-options"),
+            HeaderValue::from_static("DENY"),
+        );
+
+        // Control referrer information
+        self.headers.insert(
+            HeaderName::from_static("referrer-policy"),
+            HeaderValue::from_static("strict-origin-when-cross-origin"),
+        );
+
+        // Restrict browser features
+        self.headers.insert(
+            HeaderName::from_static("permissions-policy"),
+            HeaderValue::from_static("geolocation=(), microphone=(), camera=()"),
+        );
+
+        // Cross-domain policy
+        self.headers.insert(
+            HeaderName::from_static("x-permitted-cross-domain-policies"),
+            HeaderValue::from_static("none"),
+        );
     }
 
     /// Set response status code
@@ -135,13 +176,26 @@ impl Response {
     }
 
     /// Create an error response from an Error
+    ///
+    /// # Security
+    /// In production, server errors (5xx) only show generic messages to prevent
+    /// information leakage. Client errors (4xx) show the actual error message.
     pub fn from_error(error: &Error) -> Self {
         let status = StatusCode::from_u16(error.status_code())
             .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
 
+        // Sanitize error message for production
+        let error_message = if error.is_server_error() {
+            // For 5xx errors, don't leak internal details
+            "Internal Server Error".to_string()
+        } else {
+            // For 4xx errors, show the actual error
+            error.to_string()
+        };
+
         // Try to create JSON response
         match Self::json(&ErrorResponse {
-            error: error.to_string(),
+            error: error_message.clone(),
             status: error.status_code(),
         }) {
             Ok(mut response) => {
@@ -150,7 +204,7 @@ impl Response {
             }
             Err(_) => {
                 // Fallback to plain text
-                Self::text(error.to_string()).status(status)
+                Self::text(error_message).status(status)
             }
         }
     }
