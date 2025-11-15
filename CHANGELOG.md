@@ -5,6 +5,85 @@ All notable changes to the Half framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2025-11-15
+
+### Added - Phase 7: Testing, Configuration & Performance
+
+#### Testing Utilities
+- **TestClient**: HTTP client for testing routes without starting a server
+  - GET, POST, PUT, DELETE, PATCH methods
+  - Fluent assertion API
+  - JSON and text response helpers
+  - Header and status code assertions
+- **TestRequest Builder**: Build test requests programmatically
+  - Header support
+  - Body support (text and JSON)
+  - Fluent builder pattern
+- **TestResponse**: Rich response wrapper with assertions
+  - `assert_status()`, `assert_success()`, `assert_client_error()`
+  - `assert_header()`, `assert_body()`, `assert_json()`
+  - JSON parsing helpers
+  - Text conversion helpers
+- **Request Test Helpers**: Added `from_path_and_method()`, `set_body()`, `set_header()`
+
+#### Configuration Management
+- **Environment Detection**: Automatic environment detection from env vars
+  - Supports `APP_ENV`, `ENVIRONMENT`, `ENV` variables
+  - Development, Staging, Production, Test environments
+  - Environment-specific behaviors
+- **ConfigBuilder**: Flexible configuration loading
+  - Environment variable loading with prefix support
+  - JSON and TOML file loading
+  - Default values support
+  - Priority: defaults < files < env vars
+- **Type-Safe Config Access**:
+  - `get()`, `get_or()` for strings
+  - `get_bool()`, `get_int()`, `get_float()` with parsing
+  - `has()` for existence checks
+- **Config File Formats**:
+  - JSON support with nested object flattening
+  - TOML support (flat structure)
+  - Automatic format detection
+
+#### Performance Monitoring
+- **PerformanceMonitor Middleware**: Request performance tracking
+  - Request duration tracking
+  - Slow request detection (configurable threshold)
+  - Request/response size tracking
+  - Automatic logging of slow requests
+- **PerformanceStats**: Comprehensive statistics
+  - Total requests count
+  - Slow requests count
+  - Average request duration
+  - Average request/response sizes
+  - Total bytes transferred
+  - Reset capability for stats
+- **PerformanceConfig**: Configurable monitoring
+  - Custom slow request threshold
+  - Enable/disable logging
+  - Log only slow requests option
+
+### Tests - Phase 7
+- **187 unit tests passing** (+17 new tests from v0.9.0)
+- Testing utilities: 4 tests
+- Configuration: 7 tests
+- Performance monitoring: 6 tests
+- 12 doctests passing
+- Zero compiler warnings
+- All clippy checks passing
+
+### Developer Experience - Phase 7
+- **Testing**: Write tests without starting a server
+- **Configuration**: Environment-based configuration out of the box
+- **Performance**: Built-in performance monitoring
+- **Type Safety**: Strong typing for configuration values
+
+### Code Quality - Phase 7
+- Improved error handling with context
+- Better documentation coverage
+- Clippy-compliant code
+- Thread-safe performance statistics
+
 ## [0.9.0] - 2025-11-15
 
 ### Added - Phase 6: Advanced Features & Production Readiness

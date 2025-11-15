@@ -5,6 +5,7 @@
 pub mod cache;
 pub mod compression;
 pub mod conditional;
+pub mod performance;
 pub mod ratelimit;
 pub mod recovery;
 pub mod timeout;
@@ -17,6 +18,7 @@ use std::pin::Pin;
 pub use cache::{Cache, CacheConfig, CacheStats};
 pub use compression::{Compression, CompressionAlgorithm, CompressionLevel};
 pub use conditional::Conditional;
+pub use performance::{PerformanceMonitor, PerformanceConfig, PerformanceStats};
 pub use ratelimit::{RateLimiter, RateLimitConfig};
 pub use recovery::{Recovery, RecoveryConfig, RecoveryMode};
 pub use timeout::{Timeout, TimeoutConfig};

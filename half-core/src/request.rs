@@ -181,6 +181,57 @@ impl Request {
         self.params = params;
     }
 
+    /// Create a test request from path and method
+    ///
+    /// This is a simplified constructor primarily for use in tests. Production code
+    /// should use `from_hyper()` instead.
+    ///
+    /// # Example
+    /// ```ignore
+    /// use half_core::Request;
+    /// use hyper::Method;
+    ///
+    /// let req = Request::from_path_and_method("/api/users", Method::GET).unwrap();
+    /// ```
+    pub fn from_path_and_method(path: &str, method: Method) -> Result<Self> {
+        let uri: Uri = path
+            .parse()
+            .map_err(|e| Error::BadRequest(format!("Invalid URI: {}", e)))?;
+
+        let query = uri
+            .query()
+            .map(Self::parse_query)
+            .unwrap_or_default();
+
+        Ok(Request {
+            method,
+            uri,
+            version: Version::HTTP_11,
+            headers: HeaderMap::new(),
+            body: None,
+            params: HashMap::new(),
+            query,
+        })
+    }
+
+    /// Set request body
+    ///
+    /// Primarily for testing. Production code should use the body from `from_hyper()`.
+    pub fn set_body(&mut self, body: Vec<u8>) {
+        self.body = Some(Bytes::from(body));
+    }
+
+    /// Set a request header
+    ///
+    /// Primarily for testing. Production code should use headers from `from_hyper()`.
+    pub fn set_header(&mut self, name: &str, value: &str) {
+        if let Ok(header_name) = hyper::header::HeaderName::from_bytes(name.as_bytes()) {
+            if let Ok(header_value) = hyper::header::HeaderValue::from_str(value) {
+                self.headers.insert(header_name, header_value);
+            }
+        }
+    }
+
     /// Parse query string into key-value pairs
     ///
     /// # Security

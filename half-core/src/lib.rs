@@ -64,6 +64,7 @@
 // Public exports
 pub mod auth;
 pub mod body;
+pub mod config;
 pub mod cookies;
 pub mod error;
 pub mod handler;
@@ -80,6 +81,7 @@ pub mod session;
 pub mod sse;
 pub mod static_files;
 pub mod template;
+pub mod testing;
 pub mod trace;
 pub mod upload;
 pub mod websocket;
@@ -87,6 +89,7 @@ pub mod websocket;
 // Re-export commonly used types
 pub use auth::{JwtAuth, BasicAuth, ApiKeyAuth, Claims, AuthError};
 pub use body::{BodyParser, BodyConfig, BodyData, BodyError};
+pub use config::{Config, ConfigBuilder, Environment};
 pub use cookies::{CookieJar, SignedCookieJar, CookieBuilder};
 pub use error::{Error, Result};
 pub use handler::Handler;
@@ -101,6 +104,7 @@ pub use session::{SessionStore, Session, SessionConfig, SessionStats};
 pub use sse::{SseChannel, SseEvent, SseStream};
 pub use static_files::{StaticFileServer, StaticConfig};
 pub use template::{TemplateEngine, TemplateConfig, TemplateContext};
+pub use testing::{TestClient, TestRequest, TestResponse};
 pub use trace::{RequestId, TraceContext, TraceConfig, RequestTracer};
 pub use upload::{FileUpload, UploadConfig, UploadedFile, MultipartData, UploadError};
 pub use websocket::{WebSocket, WsMessage};
