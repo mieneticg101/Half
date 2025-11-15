@@ -63,6 +63,8 @@
 
 // Public exports
 pub mod auth;
+pub mod body;
+pub mod cookies;
 pub mod error;
 pub mod handler;
 pub mod health;
@@ -76,12 +78,16 @@ pub mod security;
 pub mod server;
 pub mod session;
 pub mod sse;
+pub mod static_files;
+pub mod template;
 pub mod trace;
 pub mod upload;
 pub mod websocket;
 
 // Re-export commonly used types
 pub use auth::{JwtAuth, BasicAuth, ApiKeyAuth, Claims, AuthError};
+pub use body::{BodyParser, BodyConfig, BodyData, BodyError};
+pub use cookies::{CookieJar, SignedCookieJar, CookieBuilder};
 pub use error::{Error, Result};
 pub use handler::Handler;
 pub use health::{HealthCheck, HealthResponse, HealthStatus, ComponentHealth};
@@ -93,6 +99,8 @@ pub use router::Router;
 pub use server::{Server, TlsConfig};
 pub use session::{SessionStore, Session, SessionConfig, SessionStats};
 pub use sse::{SseChannel, SseEvent, SseStream};
+pub use static_files::{StaticFileServer, StaticConfig};
+pub use template::{TemplateEngine, TemplateConfig, TemplateContext};
 pub use trace::{RequestId, TraceContext, TraceConfig, RequestTracer};
 pub use upload::{FileUpload, UploadConfig, UploadedFile, MultipartData, UploadError};
 pub use websocket::{WebSocket, WsMessage};
@@ -113,6 +121,8 @@ pub use security::{
 pub mod prelude {
     pub use crate::{
         auth::{JwtAuth, BasicAuth, ApiKeyAuth, Claims, AuthError},
+        body::{BodyParser, BodyConfig, BodyData, BodyError},
+        cookies::{CookieJar, SignedCookieJar, CookieBuilder},
         error::{Error, Result},
         handler::Handler,
         logging::{LogConfig, RequestLogger, MetricsLogger},
@@ -128,6 +138,8 @@ pub mod prelude {
             Helmet, CspConfig, PermissionsPolicyConfig,
         },
         server::{Server, TlsConfig},
+        static_files::{StaticFileServer, StaticConfig},
+        template::{TemplateEngine, TemplateConfig, TemplateContext},
         trace::{RequestId, TraceContext, TraceConfig, RequestTracer},
         upload::{FileUpload, UploadConfig, UploadedFile, MultipartData, UploadError},
     };

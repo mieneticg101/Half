@@ -68,6 +68,12 @@ jsonwebtoken = { workspace = true }
 # File Upload (Phase 4)
 multer = { workspace = true }
 
+# Static Files & Templates (Phase 5)
+handlebars = { workspace = true }
+mime_guess = { workspace = true }
+tokio-util = { workspace = true }
+urlencoding = { workspace = true }
+
 # Macros
 half-macros = { path = "../half-macros" }
 

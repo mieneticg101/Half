@@ -5,6 +5,76 @@ All notable changes to the Half framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2025-11-15
+
+### Added - Phase 5: Static Files, Templates & Body Parsing
+
+#### Static File Serving
+- **File Server**: Efficient static file serving with streaming
+- **MIME Type Detection**: Automatic content type detection from file extensions
+- **Security**: Path traversal prevention with canonicalization
+- **Caching**: ETag support and Cache-Control headers
+- **Configuration**: Customizable root directory, index files, cache max-age
+- **Performance**: Async file I/O with tokio
+
+#### Template Rendering
+- **Handlebars Integration**: Full Handlebars template engine support
+- **Template Caching**: Improved performance with template caching
+- **String Templates**: Register templates from strings
+- **File Templates**: Register templates from files
+- **Helper Functions**: Custom helper function support (Send + Sync)
+- **Context Builder**: Easy-to-use context builder for template data
+- **Error Handling**: Comprehensive error messages for template issues
+- **Async Operations**: All template operations are async
+
+#### Body Parsing Middleware
+- **JSON Parsing**: Automatic JSON body parsing with serde
+- **Form Parsing**: URL-encoded form data parsing (application/x-www-form-urlencoded)
+- **Auto-Detection**: Automatic body type detection based on Content-Type
+- **Size Limits**: Configurable body size limits (default 1MB) for DoS prevention
+- **URL Decoding**: Proper URL decoding with '+' to space conversion
+- **Error Handling**: Detailed error messages for parse failures
+- **Content Type Validation**: Validate request Content-Type headers
+
+#### Cookie Utilities
+- **Cookie Jar**: Parse and manage request cookies
+- **Signed Cookies**: Cryptographically signed cookies with HMAC-SHA256
+- **Cookie Builder**: Fluent API for building Set-Cookie headers
+- **Security**: Integration with existing Cookie struct from response module
+- **Easy Access**: Simple get/set/has/remove operations
+
+### Dependencies - Phase 5
+
+- Added `handlebars` 6.2 - Template rendering engine
+- Added `mime_guess` 2.0 - MIME type detection from file extensions
+- Added `tokio-util` 0.7 - Async I/O utilities
+- Added `urlencoding` 2.1 - URL encoding/decoding for forms
+
+### Performance - Phase 5
+
+- **Static Files**: Streaming file I/O prevents memory bloat
+- **Templates**: Template caching reduces render time
+- **Body Parsing**: Efficient form parsing with single-pass algorithm
+- **Async Operations**: All I/O operations are non-blocking
+
+### Tests - Phase 5
+
+- **161 unit tests passing** (+36 new tests from v0.7.0)
+- Static file tests: 5 passing
+- Template tests: 9 passing
+- Body parsing tests: 11 passing
+- Cookie tests: 11 passing
+- 12 doctests passing
+- Zero compiler warnings
+- All clippy checks passing
+
+### Security Enhancements - Phase 5
+
+- **Path Traversal Prevention**: Prevents directory traversal attacks in static file serving
+- **Body Size Limits**: DoS protection with configurable size limits
+- **Content Type Validation**: Validates Content-Type headers
+- **Signed Cookies**: HMAC-SHA256 signing for tamper-proof cookies
+
 ## [0.7.0] - 2025-11-15
 
 ### Added - Phase 4: Authentication, Logging & File Upload
